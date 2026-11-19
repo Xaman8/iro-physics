@@ -17,6 +17,39 @@ function baseUnit(text) {
   return match ? match[0] : "";
 }
 
+function loadStepDay(info) {
+  const raw = info && (info.load_step_day ?? info.load_step?.start_day ?? info.load_step?.day);
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : 87.7;
+}
+
+function median(values) {
+  const sorted = values.filter((value) => Number.isFinite(value)).sort((a, b) => a - b);
+  if (!sorted.length) return null;
+  return sorted[Math.floor(sorted.length / 2)];
+}
+
+function plantSigmaCaption(info, series) {
+  const days = series.day || [];
+  const sigma = (series.row?.sigma?.[0] || []).map(Number);
+  const step = loadStepDay(info);
+  const fail = Number(info?.first_failure?.day);
+  const before = [];
+  const after = [];
+  days.forEach((day, index) => {
+    const t = Number(day);
+    if (t >= 4 && t < step) before.push(sigma[index]);
+    if (t >= step + 4 && (!Number.isFinite(fail) || t <= fail)) after.push(sigma[index]);
+  });
+  const beforeLevel = median(before);
+  const afterLevel = median(after);
+  const hours = String(info?.smoothing || "").match(/last (\d+) hourly/);
+  const windowHours = hours ? hours[1] : "49";
+  const beforeText = beforeLevel == null ? "32" : sig3(beforeLevel);
+  const afterText = afterLevel == null ? "26.5" : sig3(afterLevel);
+  return `Plant entropy generation counts losses inside the assets (14.7 kW/K at the design point) plus losses on the couplings between them (another 15.1 kW/K). In this run's slightly perturbed plant that is about ${beforeText} kW/K until a scripted 10% load drop on day ${sig3(step)} brings it to about ${afterText}. The first two days read high because the ${windowHours}-hour average has not filled yet.`;
+}
+
 export function mountNest(root, { peer } = {}) {
   root.classList.add("nest-root");
   root.innerHTML = `
@@ -313,9 +346,13 @@ export function mountNest(root, { peer } = {}) {
       const panels = (key) => [0, 1, 2, 3].map((order) =>
         `<figure><figcaption>${orderName(info, order)} <span>${unitFor(info, key, order)}</span></figcaption><canvas data-series="${key}" data-order="${order}" data-node="${node.id}"></canvas></figure>`
       ).join("");
+      const plantNote = node.id === "PLANT" && series
+        ? `<p class="plant-sigma">${plantSigmaCaption(info, series)}</p>`
+        : "";
       return `<article class="calc-card"><h2 title="${node.name}">${label(node)}</h2>
         <h3>σ <span>${unitFor(info, "sigma", 0)}</span></h3><div class="orders">${panels("sigma")}</div>
         <p class="sigma-check">σ is shown as an energy-balance check, not a damage measure.</p>
+        ${plantNote}
         <h3>P <span>${unitFor(info, "boundary_power", 0)}</span></h3><div class="orders">${panels("boundary_power")}</div></article>`;
     }).join("");
     lastDraw = { blocks, info, token };
@@ -330,11 +367,12 @@ export function mountNest(root, { peer } = {}) {
       const idx = indicesFor(series.day);
       const onset = info && info.fault_onset_day != null ? nearest(series.day, info.fault_onset_day) : -1;
       const fail = info && info.first_failure ? nearest(series.day, info.first_failure.day) : -1;
+      const loadStep = node.id === "PLANT" ? loadStepDay(info) : null;
       for (const key of ["sigma", "boundary_power"]) {
         [0, 1, 2, 3].forEach((order) => {
           const canvas = chartsEl.querySelector(`canvas[data-node="${node.id}"][data-series="${key}"][data-order="${order}"]`);
           if (!canvas) return;
-          drawSeries(canvas, series.row[key][order], series.day, idx, { onset, fail });
+          drawSeries(canvas, series.row[key][order], series.day, idx, { onset, fail, loadStep });
         });
       }
     }
@@ -410,6 +448,9 @@ export function mountNest(root, { peer } = {}) {
     const xIndex = (index) => (idx.includes(index) ? xDay(days[index]) : null);
     markLine(ctx, xIndex(marks.onset), padT, height - padB, "#8a6d12", true);
     markLine(ctx, xIndex(marks.fail), padT, height - padB, "#9f1239", false);
+    if (marks.loadStep != null && Number(marks.loadStep) >= d0 && Number(marks.loadStep) <= d1) {
+      markLine(ctx, xDay(marks.loadStep), padT, height - padB, "rgba(28,25,21,0.28)", true);
+    }
     ctx.fillStyle = "#8a8276";
     ctx.font = "11px ui-monospace, monospace";
     const yTicks = [hi, (hi + lo) / 2, lo];
