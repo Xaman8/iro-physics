@@ -217,8 +217,8 @@ async function paintCharts() {
   }
   const fail = meta && meta.first_failure ? meta.first_failure : null;
   chartNote.textContent = fail
-    ? `σ is entropy generation, pu. P is boundary power, MW. The panels are value, rate, acceleration and jerk. The line is the first failure, ${fail.asset}, day ${fail.day}.`
-    : "σ is entropy generation, pu. P is boundary power, MW. The panels are value, rate, acceleration and jerk.";
+    ? `σ is entropy generation, kW/K. P is boundary power, MW. The panels are value, rate, acceleration and jerk, each a trailing average that uses no later data, so it lags by 24, 28.5, 33 and 37.5 hours. The line is the first failure, ${fail.asset}, day ${fail.day}.`
+    : "σ is entropy generation, kW/K. P is boundary power, MW. The panels are value, rate, acceleration and jerk, each a trailing average that uses no later data, so it lags by 24, 28.5, 33 and 37.5 hours.";
   chartsEl.innerHTML = blocks.map(({ node, series }) => {
     if (!series) {
       return `<article class="calc-card"><h2>${label(node)}</h2><p>No time series for this node in the discovered tree.</p></article>`;

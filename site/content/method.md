@@ -31,7 +31,7 @@ In IRO 2.0 the phrase *operating envelope* means something else: the bounded reg
 
 ## Entropy generation
 
-Entropy generation is the damage proxy. Dissipated power at a port, a bond or a coupling, divided by temperature, is the entropy generation rate. The toy model uses one reference temperature, T0 = 1 per unit, so the rate equals the dissipated power.
+Entropy generation is the damage proxy. Dissipated power at a port, a bond or a coupling, divided by temperature, is the entropy generation rate. This first toy model (v1) uses one reference temperature, T0 = 1 per unit, so the rate equals the dissipated power. Toy models v2 and v3 were corrected on 2026-11-19 after a red-team review: they divide each loss by its own temperature with ambient (298.15 K) as the base, count heat that flows from hot to cold, and report σ in kW/K. v1 has not been corrected yet. Entropy generation is only a provisional stand-in for damage. Bryant ties damage to the specific process that wears a part out, so losses a plant is designed to have are not damage in themselves.
 
 The operating envelope is drawn on that one coordinate. The Design limit is 1.05 times the nominal peak. The Safe limit is an asset-specific factor times the nominal peak (1.2 on the heat exchanger, 3 on the pump, 4 on the recirculation valve, 2 on the others). Below the Safe limit there is no degradation. In the Damage region the accumulated excess, divided by the entropic endurance, is the damage fraction. The asset fails when that fraction reaches 1.
 
@@ -43,9 +43,9 @@ Maintenance would enter as an entropy export. This run does not simulate entropy
 
 `dHᵢ/dt = Σ P_c (couplings into i) − Σ P_c (couplings out of i) − Dᵢ`
 
-Internal entropy generation is `Dᵢ / Tᵢ`.
+Internal entropy generation is `Dᵢ / Tᵢ`, plus `Q (1/T_cold − 1/T_hot)` for heat that crosses a temperature difference inside the asset (locked text corrected 2026-11-19; see the Formal model change log).
 
-**Step 2, locked.** Coupling *c* has its own dissipation: power at the source port minus power at the target port. The medium stays on the coupling. The constitutive law is the Onsager form. Domain conversion stays inside the asset.
+**Step 2, locked.** Coupling *c* has its own dissipation: power at the source port minus power at the target port. A coupling that carries heat from hot to cold also generates entropy, even with no dissipation (corrected 2026-11-19). The medium stays on the coupling. The constitutive law is the Onsager form. Domain conversion stays inside the asset.
 
 **Step 3, locked.** The plant is the graph of assets and couplings. Grid, ambient and process heat are ideal sources on boundary ports. They are not assets. An envelope reuses that same idea of a boundary.
 

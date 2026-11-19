@@ -15,8 +15,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CANDIDATES = [
-    Path("/cursor/stores/bot/iro-toy-model/v2"),
     ROOT.parent / "iro-toy-model" / "v2",
+    Path("/cursor/stores/bot/iro-toy-model/v2"),
 ]
 V2 = next((p for p in CANDIDATES if (p / "plant_v2.py").exists()), None)
 if V2 is None:
@@ -27,10 +27,13 @@ sys.path.insert(0, str(V2))
 import plant_v2 as pv  # noqa: E402
 
 NAMES = {
-    frozenset(["XF1", "SWG1", "VFD2"]): "Supply",
-    frozenset(["VFD1", "MCC1", "M1", "P1", "M2", "P2", "HDR1", "CV1", "CV2", "M3", "FAN1"]): "Pump trains",
-    frozenset(["MCC2", "P3", "M5", "M4", "GB1", "AG1", "BRG1", "BRG2", "LOP1", "HX2"]): "Drives and oil",
-    frozenset(["HDR2", "CT1", "HX1", "R1"]): "Heat rejection",
+    # names for the envelopes chosen by the pre-registered rule (KCw1-louvain after the 2026-11-19 red-team fixes)
+    frozenset(["XF1", "SWG1", "VFD1", "VFD2"]): "Supply",
+    frozenset(["MCC1", "M2", "P2", "M3", "FAN1"]): "MCC1 pumps and fan",
+    frozenset(["MCC2", "P3", "M5", "M4", "GB1"]): "Drives",
+    frozenset(["M1", "P1", "HDR1"]): "CW pump 1",
+    frozenset(["CV1", "HDR2", "CT1", "HX1", "R1", "AG1", "BRG1"]): "Reactor and heat rejection",
+    frozenset(["CV2", "BRG2", "LOP1", "HX2"]): "Oil and bearing",
     frozenset(["M6", "C1", "IC1", "KO1"]): "Gas train",
 }
 
@@ -42,13 +45,14 @@ def read_csv(name):
 
 def main():
     discovery = json.loads((V2 / "results" / "discovery.json").read_text())
-    groups = discovery["partitions"]["PF-louvain"]
+    chosen = discovery["chosen_for_downstream"]["name"]
+    groups = discovery["partitions"][chosen]
     env_of = {}
     envelopes = []
     for i, tags in enumerate(groups):
         key = frozenset(tags)
         if key not in NAMES:
-            raise SystemExit(f"PF-louvain group {tags} has no name in the v2 README")
+            raise SystemExit(f"{chosen} group {tags} has no name in the v2 README")
         eid = f"E{i}"
         envelopes.append({"id": eid, "name": NAMES[key], "assetIds": list(tags)})
         for tag in tags:
@@ -111,7 +115,7 @@ def main():
         "schema": "iro.bench.plant-graph/1",
         "id": "toy-v2",
         "title": "IRO toy plant v2",
-        "discoveredBy": "PF-louvain",
+        "discoveredBy": chosen,
         "replay": False,
         "note": "No v2 time series are in this site. The graph is the discovered plant, not a replay.",
         "counts": {
@@ -143,6 +147,12 @@ def main():
         "engineerKc": discovery["strong_inside_weak_between"]["ENG-functional"]["KC_DC"],
         "stability30": discovery["perturbation_stability"]["30%"]["PF-louvain"],
         "ariPfLouvainEngineer": None,
+        "chosenName": chosen,
+        "chosenKc": discovery["strong_inside_weak_between"][chosen]["KC_DC"],
+        "chosenStability30": discovery["perturbation_stability"]["30%"][chosen],
+        "chosenModularityNull": discovery["modularity_null"].get("chosen"),
+        "chosenK": len(groups),
+        "ariChosenEngineer": None,
     }
     # ARI matrix cell, stored to 3 decimals in discovery_ARI.csv
     for row in read_csv("discovery_ARI.csv"):
@@ -152,6 +162,8 @@ def main():
     header = ari_rows[0]
     eng_i = header.index("ENG-functional")
     for row in ari_rows[1:]:
+        if row[0] == chosen:
+            out["ariChosenEngineer"] = row[eng_i]
         if row[0] == "PF-louvain":
             out["ariPfLouvainEngineer"] = row[eng_i]
             out["ariHeader"] = header[1:]
@@ -167,10 +179,9 @@ def main():
         shutil.copy(V2 / "figures" / name, fig / name)
     content = SITE / "content"
     content.mkdir(parents=True, exist_ok=True)
-    shutil.copy(Path("/cursor/stores/bot/iro-paper/RESEARCH_QUESTIONS.md"), content / "research-questions.md")
-    shutil.copy(Path("/cursor/stores/bot/iro-paper/formal-model/FORMAL_MODEL.md"), content / "formal-model.md")
+    # research-questions.md and formal-model.md are updated by hand so the site's locked block stays verbatim
     print("assets", plant["counts"])
-    print("ari", out["ariPfLouvainEngineer"], "p", discovery["modularity_null"]["topology"]["p_ge"])
+    print("chosen", chosen, "ari vs eng", out["ariChosenEngineer"], "PF ari", out["ariPfLouvainEngineer"], "p", discovery["modularity_null"]["topology"]["p_ge"])
     print("F1 cross", cross.get("F1:_cross_envelope_discovered"), cross.get("F1:_cross_envelope_engineer"))
 
 
