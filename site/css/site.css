@@ -128,6 +128,7 @@ figure.plate h2 {
   margin: 0 0 6px;
 }
 figure.plate p { margin: 0; color: var(--muted); max-width: 78ch; }
+.step-link { margin: 8px 0 0; }
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
