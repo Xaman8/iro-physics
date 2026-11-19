@@ -1,0 +1,105 @@
+# Vocabulary used in the IRO toy model
+
+Sources, in order of authority for this repository:
+
+1. **Paper**: R. Arseneau and J. B. Arseneau, *Grounding Industrial System Ontologies in Physics*, draft 2026.10.27 (`/workspace/iro_paper_outline_intro.tex`, copy in `src_docs/`).
+2. **IRO 2.0 vocabulary**: *BFO_IOF_IRO (v15)* Drive sheet `1Y7EFkGOWxyXMJNQ7Pet8XULNnk7sM_Fke8hTcRPAPvQ`, tabs *Consolidated* and *IRO Physics* (same definitions as the Vocabulary tab of `/workspace/iro_ontology_2.xlsx`).
+3. **Formal spec**: `/workspace/iro-paper/formal-model/FORMAL_MODEL.md` (Step 1 locked 2026-11-19; Step 6b planned). The code follows it: ports are direction-neutral, couplings carry source port → target port, and the actual direction is the sign of P_c.
+4. **Draft 0.4**: R. Arseneau, *IRO Supplement: Energy Propagation from Source to Target Asset*, Draft 0.4 (Drive `1xJwCR5VzoRlQSU-pjTIHaUqgblRQEIxf`). It is informative only. A Draft 0.4 phrase is used only where neither (1) nor (2) has a term.
+
+Every quoted definition below is copied word for word. "Paper" quotes come from the TeX source, and "v15" quotes come from the Definition column of the v15 sheet.
+
+## 1. IRO terms used, with their definitions
+
+| Term in code / figures | Definition (quoted) | Source | How the toy model uses it |
+|---|---|---|---|
+| **Port** | "A port is an interface where energy crosses a boundary." / "Typed interface on an item where energy crosses, defined by an effort/flow pair whose product is power" | Paper §Physics Grounding/Ports; v15 | `iro_plant.PORTS`. Each port has one effort state, one storage element and one designed loss. IDs look like `P1.fluid`. Ports are **direction-neutral** (FORMAL_MODEL Step 1). The code does not use import/export port terms; "export" appears only in *entropy export*. |
+| **Mechanical / Fluid / Thermal / Electrical port** | "Port carrying force/torque and velocity"; "Port carrying pressure and volume flow"; "Port carrying temperature and heat or entropy flow; covers conduction, convection and radiation"; "Port carrying voltage and current" | v15 | Port type is the suffix of the port ID. No field ports are used. |
+| **Effort and flow variables** | "Conjugate pair at a port whose product is power" | v15 | The per-unit effort is the state; the flow comes from bonds and couplings. Power is effort × flow. |
+| **Bond** | "The power link between two ports" | v15 | `Link(kind="bond")`: the power link between two ports **of the same asset**, for example `P1.mechanical -> P1.fluid` (impeller). **Domain conversion lives inside the asset, on its bonds** (locked decision). Every coupling links two ports of the same domain, enforced by `iro_plant.check_same_domain_couplings` and tested. |
+| **Coupling** (paired: *propagation path (coupling)*) | "A coupling is a reified relation with a source and a target. The medium is a property of the link, not a thing in the chain." / "Energy pathway from source to target, with type, mechanism and intent" | Paper §Couplings; v15 | `Link(kind="coupling")` from a **source port** (`Link.source`) to a **target port** (`Link.target`) on **different assets**, with `mechanism`, `topology`, `intent` and `length_m`. Length belongs to the link, as the paper requires. The nominal direction is source port → target port, and the actual direction is the sign of the coupling power P_c (`Plant.port_power`). |
+| **Direct port coupling** | "Topology 1: asset to asset through ports" | v15 | Default `topology`. |
+| **Structure-borne coupling** | "Topology 3: through shared non-asset structure" | v15 | `R1.thermal -> BRG1.thermal`. |
+| **Parasitic coupling** | "Unintended energy path" | v15 | `intent="parasitic"`, drawn dashed in Fig. 1. |
+| **Transfer mechanism** | "How energy crosses a coupling: conduction, convection, radiation, structure-borne, fluid, electrical" | v15 | `Link.mechanism`. This replaces the retired *CouplingMedium*. |
+| **Power flow / energy flux** | "Rate of energy crossing a port" | v15 | `Plant.port_power`: measured at the target port of each cross-system coupling. It is the only signal the REDUCED predictor sees. |
+| **Transmissibility** | "Ratio of output to input amplitude across a coupling" | v15 | Distance d5 is transmissibility in dB, taken over the whole propagation path. |
+| **Impedance** | "Effort divided by flow at a port; how a boundary resists energy flow" | v15 | Distance d4 (resistance distance and impedance distance). |
+| **Resonance** | "A coupling that amplifies at some frequencies instead of damping" | v15 | Couplings with inertance (`L > 0`) can resonate. The 60 m line has one, but **it is not at the pulsation band used** (see README, limitations). |
+| **Entropy generation / entropic endurance** | "Damage measured as accumulated entropy; failure at endurance" | v15 | `Plant.entropy_generation`. Damage is entropy generation accumulated above the Safe limit, and failure happens when it reaches the entropic endurance (`OperatingEnvelope.endurance`). |
+| (entropy, paper wording) | "IRO models entropy generation as a BFO process. Bryant, Khonsari and Ling showed that degradation is proportional to the entropy generated by the dissipative processes behind it." / "Because each port carries an effort and a flow, the entropy production rate can be computed at every port and coupling." | Paper §Entropy | Entropy generation is computed for every port (designed loss), bond, coupling, asset and system. |
+| **Exergy destruction** | "Lost work, equal to ambient temperature times entropy generation" | v15; Paper §Exergy (Gouy-Stodola) | Entropy generation = dissipated power / T0, with T0 = 1 pu. |
+| **Asset** (paired: *asset (physical system)*) | "Item of value that is also a physical system defined by the constraints it satisfies" | v15 | `iro_plant.ASSETS`. |
+| **Maintainable item** (paired: *maintainable item (component)*) | "Lowest item a maintenance action addresses" | v15 | Each asset tag (P1, HX1, …) is a maintainable item. |
+| **System** | R1 second layer: "groups physical entities by their role in energy flow: systems, components, ports, and structures and media" | Paper §Second Layer | `SYSTEM_TREE`: leaf systems SYS_A…SYS_D, nested under UTIL/PROC/ELEC under PLANT. |
+| **Operating envelope** (paired: *operating window (envelope)*) | "Bounded region of safe operating states with Design, Safe and Damage limits" | v15 | `OperatingEnvelope`: Design limit, Safe limit, Damage region. In this model it is defined on one coordinate, the entropy generation rate (see differences below). |
+| **Operating context** | "Boundary conditions that move limits" | v15 | Ambient temperature: it sets the reference effort of thermal designed losses and shrinks the Safe limit of thermal-sensitive assets. |
+| **Failure mechanism** | "Physical process causing failure" | v15 | The injected disturbance, for example pump pulsation at `P1.fluid`. The code calls it `mechanism` (formerly "fault"). |
+| **Failure mode** | "How a failure is observed" | v15 | The failure mode observed here is HX1 reaching entropic endurance. |
+| **Coupling-anchored failure mode** | "Failure mode attached to the coupling, not the item" | v15 | Entropy generation in couplings that cross a system boundary is reported **separately** from both systems, so a coupling-anchored failure mode can be attached to it. No coupling is given a failure limit in this run. |
+| **Remaining useful life** (paired: *RUL (time to boundary)*) | "Time until the state reaches a limit" | v15 | t*, the predicted day the accumulated entropy generation reaches endurance. |
+| **Coupled RUL** | "RUL of a target computed with the source trajectory included" | v15 | What FULL and REDUCED compute for HX1. LOCAL computes an uncoupled RUL. |
+| **Lag window** (paired: *response delay (time constant)*) | "Delay between cause at source and effect at target" | v15 | Distance d6 (step-response t50 and group delay). |
+| **Transfer path analysis** | "Confirming a propagation path in the frequency domain" | v15 | FULL root-cause step: fits the band-amplitude pattern over all ports to each candidate source port. |
+| **Convergence point** | "Item where several active couplings meet" | v15 | R1 (reactor jacket) is a convergence point (couplings from B, D and its parasitic couplings). No separate analysis. |
+| **Inverted ontology** | "Physics first; assets emerge from constraint satisfaction" | v15 | The design rule: the plant is ports and links first, and assets are groupings of ports. |
+| **Proactive maintenance** | "Operational action in the pre-defect window" | v15 | Alarm lead time is the window available for proactive maintenance at the source. |
+
+Terms deliberately **not** used, because IRO 2.0 retired them: *Behavioural envelope* (replaced by **Operating state**), *CouplingMedium* (replaced by **Transfer mechanism**), *Edge sensitivity*, *Calculus order* (replaced by **Derivative order**), *Prevention Injection* (replaced by **Proactive maintenance**). The parent brief asked for "behavioural envelope". This repository uses **operating envelope** and **system** instead, as explained in §3.
+
+### Step 1 energy balance (FORMAL_MODEL.md, locked)
+
+`iro_plant.asset_energy_balance` computes, for every asset i,
+dH_i/dt = Σ_{c: target(c) in i} P_c − Σ_{c: source(c) in i} P_c − D_i (+ P_ext,i), with D_i ≥ 0, and entropy generation D_i / T_i.
+P_c is taken at the asset's own port. The coupling's own dissipation D_c = P_c(source port) − P_c(target port) stays on the coupling. `tests/test_formal_model.py` checks the balance to 1e-9 in steady state, and for the mean of a pulsation, on every asset.
+
+## 2. Proposed vocabulary additions
+
+These are new concepts the toy model needed. None is part of IRO until accepted through IRO governance.
+
+| Proposed term | Definition | Relation to existing IRO terms | Computable from |
+|---|---|---|---|
+| **Designed loss** | The dissipation at a port that the asset is built to shed in normal operation (Draft 0.4 §B.2: energy is "delivered as work, passed on through desired Couplings, or shed as designed losses"). | Draft 0.4 phrase; no IRO 2.0 term. Feeds **Entropy generation** below the Design limit. | Structure + parameters |
+| **Cross-system coupling** | A **Coupling** whose source port and target port belong to assets in different systems. | Subclass of Coupling (R2). Its entropy generation is reported per coupling, ready for a **Coupling-anchored failure mode**. | Structure |
+| **System-as-asset model** (brief: "envelope-as-asset") | A reduced model in which each system is treated as one **Asset (physical system)**. Its only observable interface is the **Power flow / energy flux** across its cross-system couplings, and a design-time map turns incoming power flow into the **Entropy generation** of each maintainable item inside it. | Uses the IRO definition of Asset ("physical system defined by the constraints it satisfies") at system granularity. It is a modelling granularity, not a new class. Implements Draft 0.4 SUP-01 (transfer descriptor on the coupling). | Structure + parameters (map) + data (port power flow) |
+| **Energy-balance attribution** | A root-cause procedure: start at the system holding the at-risk item, follow the cross-system coupling with the largest rise in power flow upstream, and stop at the first system that emits more added power flow than it receives. | A **Transfer path analysis** done with energy balances at system boundaries instead of the frequency domain. It matches Draft 0.4 SUP-02 (route the insight to the source). | Data (port power flow) + structure |
+| **Entropy-generation operating envelope** | An **Operating envelope** whose single coordinate is the asset's entropy generation rate σ: Design limit = 1.05 × nominal peak σ, Safe limit = asset-specific factor × nominal peak σ (no degradation below it), Damage region above it, failure when ∫(σ − Safe limit)dt reaches the **entropic endurance**. | Specialisation of Operating envelope. It makes the IRO "Safe: no degradation" rule computable with **Entropy generation / entropic endurance**. | Structure + parameters |
+| **System entropy generation** | The sum of the entropy generation of a system's assets (ports + bonds) and of the couplings wholly inside it. Cross-system couplings are excluded and reported on their own. | Aggregates **Entropy generation** over the R1 "systems" layer. | Structure + parameters + operating state |
+| **Failure-mechanism band** | The frequency band (rad/s, or 0 for a steady excursion) in which a failure mechanism injects power. | Qualifies **Failure mechanism**. **Transmissibility**, **Impedance** and **Lag window** are evaluated in this band. | Structure + mechanism type |
+| **Port directionality** (FORMAL_MODEL Step 1 [PROPOSED]) | A design constraint of a port, one of {source-only, target-only, reversible}. It states what the port is built to tolerate; it is not the physics of direction. In the code it is applied to the port's net coupling power N_p = Σ_{c sourced at p} P_c − Σ_{c targeting p} P_c. | Power against it is an excursion outside the **Operating envelope**. `iro_plant.PORT_DIRECTIONALITY`; the excursion power is added to the asset's damage (`cross_system_failure.simulate_truth`). | Structure (design) + data |
+| **Port-to-port map Z(s)** (FORMAL_MODEL Step 6b [PROPOSED]) | The map e_K = Z(jω) J_K between a chosen set of ports K, obtained by Kron reduction (Schur complement) of the nodal admittance Y(jω): Y_red = Y_KK − Y_KI Y_II⁻¹ Y_IK, Z = Y_red⁻¹. It holds for one operating state of the linearised model. | Abs(Z_ts) at the failure-mechanism band is the **Transmissibility**-based distance d5. It is a derived screening view, and the coupling graph remains the model. `iro_plant.kron_port_map`; tested equal to the state-space response. | Structure + parameters |
+| **Convergent excitation** [PROPOSED] | Two or more sources in different systems, each alone within the target's limits, whose combined response at a target asset exceeds a limit or hits a resonance. Damage is assessed on the combined response (fatigue-style A^m with an endurance limit), never as a sum of per-source damage. | Extends **Convergence point** ("Item where several active couplings meet") from topology to spectrum and phase. Uses **Resonance**. `convergent_excitation.py`. | Structure + parameters + **data** (source spectra with phase) |
+| **Spectral port description** [PROPOSED] | The power spectral density of effort and flow at a port, plus the cross-spectral density (with phase) between ports, per failure-mechanism band. | Extends **Power flow / energy flux** (a scalar rate) to a spectrum, so that coherent addition and resonance can be computed at a system boundary. The REDUCED_SPEC predictor uses it. | Data |
+| **Propagation distance** | The family of measures of how far a target asset is from the source of a failure mechanism. Eight types are listed below. | New family that groups **Transmissibility**, **Impedance**, **Lag window** and **Transfer path analysis** with graph distances. | See each type |
+
+### Propagation distance types (proposed)
+
+| ID | Proposed name | Definition | Needs | Closest IRO term |
+|---|---|---|---|---|
+| d1a | Plant-coordinate distance | Euclidean distance between the source and target assets' plant coordinates (m). | Structure (layout) | none |
+| d1b | Line-length distance | Shortest sum of coupling lengths (pipe/cable/shaft m) between source port and target port. | Structure | Coupling (length is a link property) |
+| d2 | Asset-hop distance | Number of couplings on the shortest asset-to-asset path. | Structure | Coupling |
+| d3a | System-hop distance (brief: "envelope hops") | Number of cross-system couplings on the shortest path in the leaf-system graph. | Structure | Cross-system coupling [proposed] |
+| d3b | Nested-system distance | Steps up and down the system tree (PLANT > UTIL/PROC/ELEC > SYS_x) to the lowest common parent. | Structure | System (R1 layer) |
+| d4a | Resistance distance | Effective resistance between source and target ports in the steady-state conductance graph (Laplacian pseudoinverse). | Structure + parameters | Impedance |
+| d4b | Band impedance distance | Abs(Z_ss + Z_tt − Z_st − Z_ts), the effective impedance between the two ports at the failure-mechanism band, with storage and designed losses included. | Structure + parameters | Impedance |
+| d4c | Path resistance | Smallest sum of link resistances (1/coupling strength) along a path. | Structure + parameters | Degree of coupling (inverse sense) |
+| d5 | Transmissibility distance | −20 log10(Abs(e_target)/Abs(e_source)) at the failure-mechanism band (dB). This equals −20 log10(Abs(Z_ts)/Abs(Z_ss)) from the port-to-port map. | Structure + parameters | **Transmissibility** |
+| d5k | Port-to-port map distance | −20 log10 Abs(Z_ts(jω)) from the Kron-reduced map (FORMAL_MODEL Step 6b), not normalised by the source port. | Structure + parameters | Impedance / Transmissibility |
+| d6a | Group-delay distance | Abs(−dφ/dω) of the source→target transfer at the band. | Structure + parameters | **Lag window** |
+| d6b | Lag-window distance | Time for the target port to reach 50 % of its final response to a step at the source. | Structure + parameters | **Lag window** |
+| d7 | Domain-crossing count | Number of **converting assets** on the least-resistance path: assets the path enters through a port of one domain and leaves through a port of another. Couplings are same-domain, so conversion happens only inside assets. | Structure | Port types; Bond |
+| d9 | Spectral proximity [PROPOSED] | Closeness of the source's failure-mechanism band to the target's resonances: min Abs(ln(ω/ω_r)) over the driving-point Abs(Z_pp) peaks of the target's ports and any asset mode. In the convergent test it is written Abs(ω − ω_n)/(ζ ω_n) in half-power bandwidths. Undefined for steady excursions. | Structure + parameters | Resonance |
+| d8a | Granger information distance | 1 / Granger causality (log residual-variance ratio, 10 lags) from the source-port signal to the target-port signal, from simulated noisy observations. | **Data** | Transfer path analysis (data-driven) |
+| d8b | Cross-correlation lag | Lag of the peak cross-correlation between the source and target signals. | **Data** | Lag window (data-driven) |
+
+## 3. Where the model departs from the IRO definitions
+
+1. **Envelope.** The parent brief used "envelope" for a group of assets ("envelope A", "envelope-as-asset", "envelope hops"). In IRO 2.0 an **Operating envelope** belongs to one asset ("Bounded region of safe operating states with Design, Safe and Damage limits"), and the named-state sense (*Behavioural envelope*) is retired in favour of **Operating state**. The paper itself records "two senses of 'envelope'" as an open inconsistency. This repository therefore uses **System** (paper R1 second layer) for the grouping, and gives each system and each asset its own operating envelope.
+2. **Operating envelope coordinate.** IRO's operating envelope is a region of operating states (Draft 0.4: E = {x : gᵢ(x, θ) ≤ 0}). Here it is collapsed onto a single coordinate, the entropy generation rate. That makes the Safe and Damage regions computable, but it loses the multi-wall geometry (different gᵢ for cavitation, temperature and so on).
+3. **Entropy generation.** All dissipation is divided by one reference temperature (T0 = 1 pu). FORMAL_MODEL Step 1 writes D_i / T_i with the asset's own temperature, which this model does not do yet. The paper's thermal-domain entropy flow, and the separate d_iS / d_eS bookkeeping, are not modelled. Entropy export (restoration) is not simulated.
+4. **Degradation law.** Bryant, Khonsari and Ling make degradation a linear combination of the entropy generation of the dissipative processes. Here damage grows linearly with σ above the Safe limit and not at all below it, which is the IRO "Safe: no degradation" reading. The threshold is a modelling choice and is not in Bryant et al.
+5. **Coupling strength.** The paper grounds coupling strength in Onsager cross-coefficients and the Kedem-Caplan degree of coupling. The toy model uses scalar per-unit resistances and inertances. Cross-effects between non-conjugate flows (Onsager off-diagonal terms) are represented only by bonds inside an asset, not by a coefficient matrix.
+6. **Ports.** Each port is a single node with one storage and one designed loss. Energy ports (non-dual pairs) and field ports are not used.
+7. **Port-Hamiltonian form.** FORMAL_MODEL Step 1 writes each asset as dx_i/dt = (J_i − R_i)∇H_i + G_i u_i. The toy model assembles the whole plant as one linear state space (storage at ports, R and L on links). It is equivalent for linear elements, but it is not written out per asset.
+8. **Chain sensitivity.** Draft 0.4 (quoting v11) multiplies edge sensitivities along a chain. IRO 2.0 retires *Edge sensitivity*. The model uses whole-network transmissibility, which includes loading by everything downstream, so it is not a product of per-coupling factors.
