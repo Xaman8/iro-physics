@@ -65,6 +65,12 @@ def main():
             "envelopeId": env_of[asset.tag],
         })
 
+    def design_power_mw(link):
+        """Design power on a coupling, MW. Thermal links store heat flow in f0."""
+        if "thermal" in link.source:
+            return abs(link.f0)
+        return abs(link.f0 * pv.E[link.source])
+
     couplings = []
     for link in pv.couplings():
         a = pv.port_asset(link.source)
@@ -82,6 +88,7 @@ def main():
             "topology": link.topology,
             "mechanism": link.mechanism,
             "length_m": link.length_m,
+            "powerMw": design_power_mw(link),
             "boundary": env_of[a] != env_of[b],
         })
 

@@ -1,3 +1,5 @@
+import { sig3 } from "./format.js";
+
 const [plant, v2] = await Promise.all([
   fetch("data/v2-plant.json").then((r) => r.json()),
   fetch("data/v2-results.json").then((r) => r.json()),
@@ -10,7 +12,7 @@ extra.innerHTML = `
   <p>v1 is the 11-asset plant already on the Apparatus page: four envelopes assigned by function, 21 ports, 13 couplings. The headline fault is a pulsation at P1.fluid. The run is seed 1000 of that study.</p>
   <p>v2 is a separate plant. Counted from the v2 graph file built from <code>plant_v2.py</code>: ${c.assets} assets, ${c.ports} ports, ${c.bonds} bonds, ${c.couplings} couplings, of which ${c.boundaryCouplings} cross a discovered envelope. The envelopes used downstream are the PF-louvain partition, ${c.envelopes} envelopes, ${c.boundaryPorts} boundary ports. They were not assigned. An engineer’s functional grouping and an area grouping are kept only for scoring and for the REDUCED_ENG predictor.</p>
   <h2>Finding the envelopes</h2>
-  <p>Step 5 tries four weightings of the same asset graph: design power flow, Kedem–Caplan q on the Kron two-port <span class="badge draft">proposed</span>, timescale signatures, and slow coherency. Each weighting is partitioned by spectral clustering and by Louvain. The selection rule, fixed before the comparison with the engineer, keeps the power-flow or Kedem–Caplan partition with the highest mean adjusted Rand index under a ±30% parameter perturbation. On this plant that is PF-louvain. Modularity is reported against nulls and is not treated as proof of an envelope. For the power-flow weights, Q is ${v2.modularityNull.PF.Q}, below the weight-shuffle null mean ${v2.modularityNull.PF.null_mean}. Topology Q ${v2.modularityNull.topology.Q_unweighted} against a rewired null mean ${v2.modularityNull.topology.rewired_null_mean} has p ${v2.modularityNull.topology.p_ge}.</p>
+  <p>Step 5 tries four weightings of the same asset graph: design power flow, Kedem–Caplan q on the Kron two-port <span class="badge draft">proposed</span>, timescale signatures, and slow coherency. Each weighting is partitioned by spectral clustering and by Louvain. The selection rule, fixed before the comparison with the engineer, keeps the power-flow or Kedem–Caplan partition with the highest mean adjusted Rand index under a ±30% parameter perturbation. On this plant that is PF-louvain. Modularity is reported against nulls and is not treated as proof of an envelope. For the power-flow weights, Q is ${sig3(v2.modularityNull.PF.Q)}, below the weight-shuffle null mean ${sig3(v2.modularityNull.PF.null_mean)}. Topology Q ${sig3(v2.modularityNull.topology.Q_unweighted)} against a rewired null mean ${sig3(v2.modularityNull.topology.rewired_null_mean)} has p ${sig3(v2.modularityNull.topology.p_ge)}.</p>
   <h2>Predictors</h2>
   <ul>
     <li>FULL. Every port. On v2 that is all ${c.ports} ports.</li>

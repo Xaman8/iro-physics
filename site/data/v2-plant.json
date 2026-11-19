@@ -286,6 +286,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (journal)",
       "length_m": 0.5,
+      "powerMw": 0.007014028056112225,
       "boundary": true
     },
     {
@@ -301,6 +302,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (disc coupling)",
       "length_m": 1.0,
+      "powerMw": 1.6232605491544212,
       "boundary": false
     },
     {
@@ -316,6 +318,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 150 m)",
       "length_m": 150,
+      "powerMw": 1.6991265495937837,
       "boundary": true
     },
     {
@@ -331,6 +334,7 @@
       "topology": "direct port",
       "mechanism": "fluid (gas discharge pipe 6 m)",
       "length_m": 6,
+      "powerMw": 0.78,
       "boundary": false
     },
     {
@@ -346,6 +350,7 @@
       "topology": "direct port",
       "mechanism": "fluid (gas pipe 8 m)",
       "length_m": 8,
+      "powerMw": 0.7682000000000001,
       "boundary": false
     },
     {
@@ -361,6 +366,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by gas)",
       "length_m": 6,
+      "powerMw": 0.4101711381850181,
       "boundary": false
     },
     {
@@ -376,6 +382,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by CW return)",
       "length_m": 110,
+      "powerMw": 0.40606942680316793,
       "boundary": true
     },
     {
@@ -391,6 +398,7 @@
       "topology": "direct port",
       "mechanism": "fluid (oil pipe 4 m)",
       "length_m": 4,
+      "powerMw": 0.004,
       "boundary": false
     },
     {
@@ -406,6 +414,7 @@
       "topology": "direct port",
       "mechanism": "fluid (oil pipe 3 m)",
       "length_m": 3,
+      "powerMw": 0.0034391741778922002,
       "boundary": false
     },
     {
@@ -421,6 +430,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by oil return)",
       "length_m": 4,
+      "powerMw": 0.006822356599898508,
       "boundary": false
     },
     {
@@ -436,6 +446,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by CW return)",
       "length_m": 110,
+      "powerMw": 0.006685909467900538,
       "boundary": true
     },
     {
@@ -451,6 +462,7 @@
       "topology": "direct port",
       "mechanism": "fluid (impeller discharge into vessel liquid)",
       "length_m": 0.5,
+      "powerMw": 0.008541243955697457,
       "boundary": true
     },
     {
@@ -466,6 +478,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (journal)",
       "length_m": 0.5,
+      "powerMw": 0.00030060120240480955,
       "boundary": false
     },
     {
@@ -481,6 +494,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (agitator shaft 4 m)",
       "length_m": 4,
+      "powerMw": 0.020341283769944703,
       "boundary": false
     },
     {
@@ -496,6 +510,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (flexible coupling)",
       "length_m": 0.5,
+      "powerMw": 0.02099402141340176,
       "boundary": false
     },
     {
@@ -511,6 +526,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 30 m)",
       "length_m": 30,
+      "powerMw": 0.022687654847789226,
       "boundary": false
     },
     {
@@ -526,6 +542,7 @@
       "topology": "direct port",
       "mechanism": "fluid (process pipe 18 m)",
       "length_m": 18,
+      "powerMw": 0.0058,
       "boundary": true
     },
     {
@@ -541,6 +558,7 @@
       "topology": "direct port",
       "mechanism": "fluid (process return pipe 30 m)",
       "length_m": 30,
+      "powerMw": 0.004234820073694611,
       "boundary": false
     },
     {
@@ -556,6 +574,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (flexible coupling)",
       "length_m": 0.5,
+      "powerMw": 0.00830231892356141,
       "boundary": false
     },
     {
@@ -571,6 +590,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 25 m)",
       "length_m": 25,
+      "powerMw": 0.009169273757315598,
       "boundary": false
     },
     {
@@ -586,6 +606,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by process loop)",
       "length_m": 48,
+      "powerMw": 1.98,
       "boundary": false
     },
     {
@@ -601,6 +622,7 @@
       "topology": "direct port",
       "mechanism": "convection (advection by CW return)",
       "length_m": 60,
+      "powerMw": 1.9710045454545455,
       "boundary": false
     },
     {
@@ -616,6 +638,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW pipe 90 m DN200)",
       "length_m": 90,
+      "powerMw": 0.021436363636363635,
       "boundary": false
     },
     {
@@ -631,6 +654,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW spool 5 m)",
       "length_m": 5,
+      "powerMw": 0.013682785299806577,
       "boundary": true
     },
     {
@@ -646,6 +670,7 @@
       "topology": "direct port",
       "mechanism": "fluid (tubes + CW return 40 m DN200)",
       "length_m": 40,
+      "powerMw": 0.010131342359767892,
       "boundary": false
     },
     {
@@ -661,6 +686,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW pipe 100 m DN150)",
       "length_m": 100,
+      "powerMw": 0.004426609090909091,
       "boundary": true
     },
     {
@@ -676,6 +702,7 @@
       "topology": "direct port",
       "mechanism": "fluid (tubes + CW return 110 m DN150)",
       "length_m": 110,
+      "powerMw": 0.003979964233636364,
       "boundary": true
     },
     {
@@ -691,6 +718,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW pipe 95 m DN50)",
       "length_m": 95,
+      "powerMw": 7.502727272727274e-05,
       "boundary": false
     },
     {
@@ -706,6 +734,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW spool 3 m)",
       "length_m": 3,
+      "powerMw": 4.256866537717603e-05,
       "boundary": true
     },
     {
@@ -721,6 +750,7 @@
       "topology": "direct port",
       "mechanism": "fluid (tubes + CW return 110 m DN50)",
       "length_m": 110,
+      "powerMw": 3.189457253384914e-05,
       "boundary": true
     },
     {
@@ -736,6 +766,7 @@
       "topology": "direct port",
       "mechanism": "fluid (CW riser 15 m DN250)",
       "length_m": 15,
+      "powerMw": 0.0065053445922940035,
       "boundary": false
     },
     {
@@ -751,6 +782,7 @@
       "topology": "direct port",
       "mechanism": "fluid (discharge pipe 10 m DN150)",
       "length_m": 10,
+      "powerMw": 0.013542917846840426,
       "boundary": false
     },
     {
@@ -766,6 +798,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (flexible coupling)",
       "length_m": 0.5,
+      "powerMw": 0.018120559779652115,
       "boundary": false
     },
     {
@@ -781,6 +814,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 65 m)",
       "length_m": 65,
+      "powerMw": 0.0196812857387337,
       "boundary": false
     },
     {
@@ -796,6 +830,7 @@
       "topology": "direct port",
       "mechanism": "fluid (discharge pipe 10 m DN150)",
       "length_m": 10,
+      "powerMw": 0.013454338008971105,
       "boundary": false
     },
     {
@@ -811,6 +846,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (flexible coupling)",
       "length_m": 0.5,
+      "powerMw": 0.018002039069009438,
       "boundary": false
     },
     {
@@ -826,6 +862,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 5 m)",
       "length_m": 5,
+      "powerMw": 0.019395822902805004,
       "boundary": false
     },
     {
@@ -841,6 +878,7 @@
       "topology": "direct port",
       "mechanism": "fluid (air, plenum)",
       "length_m": 1,
+      "powerMw": 0.02293622448979592,
       "boundary": true
     },
     {
@@ -856,6 +894,7 @@
       "topology": "direct port",
       "mechanism": "structure-borne (fan drive shaft 3 m)",
       "length_m": 3,
+      "powerMw": 0.03125260308204914,
       "boundary": false
     },
     {
@@ -871,6 +910,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 55 m)",
       "length_m": 55,
+      "powerMw": 0.033762872664667154,
       "boundary": false
     },
     {
@@ -886,6 +926,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 40 m)",
       "length_m": 40,
+      "powerMw": 0.006734006734006734,
       "boundary": false
     },
     {
@@ -901,6 +942,7 @@
       "topology": "direct port",
       "mechanism": "electrical (feeder 80 m)",
       "length_m": 80,
+      "powerMw": 0.05402218706907576,
       "boundary": true
     },
     {
@@ -916,6 +958,7 @@
       "topology": "direct port",
       "mechanism": "electrical (feeder 170 m)",
       "length_m": 170,
+      "powerMw": 0.03941788395352108,
       "boundary": true
     },
     {
@@ -931,6 +974,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 5 m)",
       "length_m": 5,
+      "powerMw": 0.020211235112353388,
       "boundary": true
     },
     {
@@ -946,6 +990,7 @@
       "topology": "direct port",
       "mechanism": "electrical (cable 5 m)",
       "length_m": 5,
+      "powerMw": 1.7448781870940555,
       "boundary": false
     },
     {
@@ -961,6 +1006,7 @@
       "topology": "direct port",
       "mechanism": "electrical (busduct 10 m)",
       "length_m": 10,
+      "powerMw": 1.8622596404513312,
       "boundary": false
     },
     {
@@ -976,6 +1022,7 @@
       "topology": "structure-mediated",
       "mechanism": "conduction (reactor top head and bearing housing)",
       "length_m": 2,
+      "powerMw": 5.8972454040308405e-06,
       "boundary": true
     },
     {
@@ -991,6 +1038,7 @@
       "topology": "structure-mediated",
       "mechanism": "conduction (gearbox mounting on reactor head)",
       "length_m": 3,
+      "powerMw": 5.870656835863535e-06,
       "boundary": true
     },
     {
@@ -1006,6 +1054,7 @@
       "topology": "medium-only",
       "mechanism": "convection (shared drive-room air)",
       "length_m": 10,
+      "powerMw": 2.1551594021963067e-06,
       "boundary": true
     },
     {
@@ -1021,6 +1070,7 @@
       "topology": "medium-only",
       "mechanism": "convection (compressor-house air)",
       "length_m": 5,
+      "powerMw": 0.00017188373165209897,
       "boundary": false
     }
   ],

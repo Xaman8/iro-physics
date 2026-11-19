@@ -27,11 +27,11 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
           <option value="reduced">Envelope as one asset</option>
         </select></label>
       </div>
+      <div class="legend" id="envLegend"></div>
       <div class="env-stage" id="envStage">
         <svg class="env-svg" id="envSvg"></svg>
         <div class="env-cols" id="envCols"></div>
       </div>
-      <div class="legend" id="envLegend"></div>
       <div class="below">
         <div class="deriv-head">
           <label>Instrument <select id="envInstrument"></select></label>
@@ -121,9 +121,8 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
   function assetCard(id) {
     const asset = assetById[id];
     const ports = plant.ports.filter((p) => p.assetId === id);
-    const role = asset.name.split("(")[0].trim();
     return `<article class="asset" data-asset="${id}" title="${escapeHtml(asset.name)}">
-      <header><b>${id}</b><span>${escapeHtml(role.length > 22 ? role.slice(0, 20) + "…" : role)}</span></header>
+      <header><b>${id}</b></header>
       <div class="ports">${ports.map(portDot).join("")}</div>
       <div class="meter" title="Entropy generation against the Safe limit"><i data-meter="${id}"></i></div>
       <span class="nums" data-nums="${id}"></span>
@@ -229,7 +228,7 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
       const power = Number(row.powerDc[i]) + Number(row.powerAc[i]);
       const width = 1.15 + 8 * Math.sqrt(Math.min(1.4, Math.abs(power) / (scale * 1.2 + 0.05)));
       const forward = power >= 0;
-      const bow = coupling.boundary ? -18 - (Math.abs(hash(coupling.id)) % 3) * 10 : 18;
+      const bow = coupling.boundary ? -14 : 0;
       const from = forward ? a : b;
       const to = forward ? b : a;
       const dash = coupling.intent === "parasitic" ? ' stroke-dasharray="4 4"' : "";

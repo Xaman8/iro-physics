@@ -2,11 +2,26 @@ export function text(value) {
   if (value === null || value === undefined || value === "") return "—";
   if (typeof value === "number") {
     if (!Number.isFinite(value)) return "—";
-    return String(value);
+    return sig3(value);
   }
   const s = String(value);
   if (s === "nan" || s === "NaN") return "—";
-  return s;
+  return sig3(s);
+}
+
+/** Three significant figures for a plain number. Fractions and ranges stay as stored. */
+export function sig3(value) {
+  if (value === null || value === undefined || value === "") return "—";
+  const s = String(value).trim();
+  if (s === "nan" || s === "NaN") return "—";
+  if (!/^[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?$/.test(s)) return s;
+  const n = Number(s);
+  if (!Number.isFinite(n)) return s;
+  const ax = Math.abs(n);
+  if (ax === 0) return "0";
+  if (Number.isInteger(n) && ax < 1e6) return String(n);
+  if (ax >= 1e4 || ax < 1e-3) return n.toExponential(2).replace("e+", "e");
+  return n.toPrecision(3);
 }
 
 export function compact(value) {
