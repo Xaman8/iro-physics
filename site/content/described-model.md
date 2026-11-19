@@ -8,12 +8,12 @@ This page describes in prose what the IRO toy models compute and how they comput
 - **Step 2.** Every asset is an energy transfer function with five ports: mechanical, fluid, thermal, electrical and chemical, some of them unused. Energy changes kind inside an asset and travels between assets along couplings.
 - **Step 3.** The simplest view is every asset against every other. With five ports each, that is $(5N)^2 = 25N^2$ possible port-to-port links, or 2.5 billion at 10,000 assets.
 - **Step 4.** Most of those links are zero and the rest are linear. A plant has a few couplings per asset, so it is a sparse linear system that a CPU or GPU solves quickly. In the benchmark one update took about 20 ms at 10,000 assets on one CPU core. Cost rises sharply for densely meshed plants and for simulation that resolves the time domain.
-- **Step 5.** Model it differently: find natural envelopes from coupling strength.
+- **Step 5.** Model it differently: find natural envelopes from coupling strength. Our hypothesis is that in a large or tightly meshed plant, running the whole graph in real time would take too much computing.
 - **Step 6.** Each envelope becomes one asset with boundary ports.
 - **Step 7.** A failure crosses envelopes.
 - **Step 8.** Detect it and trace it back. Instruments show the fault developing, and the model works backwards to name the source.
 
-Step 4 has a consequence for the rest. Because the full sparse solve is already fast, envelopes are not justified by speed on a single machine. In the benchmark, on one core, the envelope solve was exact but no faster than a good sparse solver of the whole plant. The case for envelopes rests on four other things: scaling to large or densely meshed plants, cheap updates when one part of the plant changes, recursion (envelopes of envelopes), and revealing behaviour that involves several assets at once, which is lead hypothesis (2). Apart from the measured speeds, none of these has been tested yet.
+Step 4 leads to the hypothesis behind envelopes, hypothesis (8) [PROPOSED] (Brant, 2026-11-19). The plant graph is sparse, but in a large or tightly meshed plant it is still very large, and running the whole thing to predict behaviour and faults in real time would take too much computing. So the assets are grouped into envelopes and each envelope is reduced to one equivalent asset. The benchmark has not supported this yet. On one core the full sparse solve took about 20 ms per update at 10,000 assets, and the envelope solve was exact but no faster at any size measured, including the meshed 100,000-asset plant (11.64 s full against 25.23 s envelope, refactorized). The hypothesis therefore depends on cases not measured so far: plants larger or more meshed than those tested, a real-time update rate faster than the 6-hour means the v2 predictors use, cheap updates when one part of the plant changes, parallel work across envelopes, and recursion (envelopes of envelopes). Revealing behaviour that involves several assets at once is a separate argument, lead hypothesis (2). XB and X4 in the Experimental Design are the planned tests.
 
 ## Step 1. The plant is assets joined by couplings
 
@@ -239,7 +239,7 @@ SCALING.md lists where envelopes should win, none of it measured yet:
 - The offline Kron work runs in parallel on several cores.
 - Recursion (RQ3) shrinks the boundary system again.
 
-The fourth argument, revealing behaviour that involves several assets, is not a cost argument. It is lead hypothesis (2).
+These are the cases hypothesis (8) depends on. The fourth argument, revealing behaviour that involves several assets, is not a cost argument. It is lead hypothesis (2).
 
 ## Step 7. A failure that crosses envelopes
 

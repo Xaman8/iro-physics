@@ -106,6 +106,23 @@ const cards = [
       "v1’s convergent table is on the Results page. Several damaging cases have a per-source damage sum of 0 in convergent_excitation_summary.json, which is the part of the prediction the v1 toy supports. v2 F4 supports detection and also shows the over-prediction when the mode moves.",
     ],
   },
+  {
+    id: "(8)",
+    anchor: "h8",
+    title: "Envelopes keep real-time prediction within computing reach in large or tightly meshed plants",
+    rq: "RQ12 and RQ16 (Brant, 2026-11-19)",
+    status: "proposed",
+    cls: "draft",
+    prediction: "In a large or tightly meshed plant the coupling graph, sparse as it is, is still very large, and running all of it to predict behaviour and faults in real time takes too much computing. Grouping the assets into envelopes and reducing each envelope to one equivalent asset brings the update inside the time available, with the same answer. The gain should show first where only one envelope changes between updates.",
+    falsify: "At the plant sizes and meshing tested, the full sparse solve keeps up with the required update rate, or the envelope model is no faster than it, including after a change inside one envelope.",
+    test: `<a href="design.html#xb">XB</a>, full baseline against envelopes on the same scenarios, for accuracy and update cost. X4 for meshing density, ordering and hardware. The required real-time update rate has not been set yet.`,
+    evidence: [
+      "Scaling benchmark, one CPU core (SCALING.md). Full update at 10,016 assets: 19.8 ms with stored factorizations, 142 ms refactorized. At 100,000 assets: 274 ms and 1.55 s.",
+      "Meshed plant at 100,000 assets, refactorized update: 11.6 s full, 25.2 s envelope. A plant-year of 1,461 updates at 100,000 assets took 6.7 to 37.8 min on the grid plant and 4.7 h meshed.",
+      "The envelope solve matched the full solve to within 5e-9 relative, but it was not faster per update at any size measured. So far the benchmark does not support the hypothesis.",
+      "Not measured yet: updates after a change inside one envelope, the Kron work spread over several cores, GPU, METIS ordering, and envelopes of envelopes. The v2 predictors work on 6-hour means, and every measured full update fits easily inside that interval, so the test needs a faster real-time rate or larger, more meshed plants than these.",
+    ],
+  },
 ];
 
 const leadHtml = leads.map((item) => `
@@ -117,7 +134,7 @@ const leadHtml = leads.map((item) => `
 `).join("");
 
 document.getElementById("hypotheses").innerHTML = leadHtml + cards.map((card) => `
-  <article class="hyp">
+  <article class="hyp"${card.anchor ? ` id="${card.anchor}"` : ""}>
     <span class="badge ${card.cls}">${card.status}</span>
     <h2>${card.id}. ${card.title}</h2>
     <p class="note">From ${card.rq}.</p>
