@@ -8,10 +8,20 @@ const DOMAIN = {
   chemical: "#6b3fa0",
 };
 
+function domainLabel(name) {
+  return name === "chemical" ? "chemical (v3 port not physical)" : name;
+}
+
+function baseUnit(text) {
+  const match = String(text || "").match(/kW\/K|\bMW\b|\bkW\b|\bpu\b/);
+  return match ? match[0] : "";
+}
+
 export function mountNest(root, { peer } = {}) {
   root.classList.add("nest-root");
   root.innerHTML = `
     <p class="ex-note" data-notice>This is a made-up toy plant, not real plant data. The charts are for display only.</p>
+    <p class="ex-note" data-caveat>In this v1 toy the limit is entropic endurance; the study now keeps entropy generation as a balance check and tracks damage per mechanism (RQ10).</p>
     <div class="ex-bar">
       <div class="seg" role="group" aria-label="Hierarchy">
         <button type="button" class="btn" data-tree="designed" aria-pressed="true">Designed</button>
@@ -22,7 +32,7 @@ export function mountNest(root, { peer } = {}) {
         <button type="button" class="btn" data-win="fault" aria-pressed="true">Onset to failure</button>
       </div>
       <ul class="dom-legend">${Object.keys(DOMAIN).map((name) =>
-        `<li><i style="background:${DOMAIN[name]}"></i>${name}</li>`
+        `<li><i style="background:${DOMAIN[name]}"></i>${domainLabel(name)}</li>`
       ).join("")}</ul>
       ${peer ? `<a class="btn" href="${peer.href}">${peer.label}</a>` : ""}
     </div>
@@ -238,14 +248,24 @@ export function mountNest(root, { peer } = {}) {
   }
 
   function unitFor(info, key, index) {
-    const text = String(info?.quantities?.[key] || "");
-    const base = /\bMW\b/.test(text) && !/\bpu\b/.test(text) ? "MW" : (/\bpu\b/.test(text) ? "pu" : "");
+    const base = baseUnit(info?.quantities?.[key]);
     if (!base || index === 0) return base;
     const raw = String(info?.orders?.[index] || "");
     const power = raw.match(/per day\^(\d+)/);
     if (power) return `${base}/day^${power[1]}`;
     if (/per day/.test(raw)) return `${base}/day`;
     return base;
+  }
+
+  function lagNote(info) {
+    const lag = info?.lag_hours;
+    if (!lag) return "";
+    const bits = [0, 1, 2, 3].map((index) => {
+      const hours = lag[index] ?? lag[String(index)];
+      if (hours == null || hours === "") return "";
+      return `${orderName(info, index)} ${Number(hours)} h`;
+    }).filter(Boolean);
+    return bits.length ? `Causal trailing windows; stated lag ${bits.join(", ")}.` : "";
   }
 
   function indicesFor(days) {
@@ -282,7 +302,10 @@ export function mountNest(root, { peer } = {}) {
     const where = windowMode === "fault" && onset != null && fail
       ? `Days ${sig3(onset)} to ${sig3(fail.day)}.`
       : "The y-scale leaves out the first and last day, where the smoothing window runs off the series.";
-    chartNote.textContent = `Dashed line: fault onset. Solid line: first failure${fail ? `, ${fail.asset}` : ""}. ${where}`;
+    const failure = fail
+      ? `Solid line: first failure, from the toy model's provisional failure rule (${fail.asset}, day ${sig3(fail.day)}).`
+      : "Solid line: first failure, from the toy model's provisional failure rule.";
+    chartNote.textContent = [`Dashed line: fault onset.`, failure, lagNote(info), where].filter(Boolean).join(" ");
     chartsEl.innerHTML = blocks.map(({ node, series }) => {
       if (!series) {
         return `<article class="calc-card"><h2>${label(node)}</h2><p>No time series for this node in the discovered tree.</p></article>`;
@@ -292,6 +315,7 @@ export function mountNest(root, { peer } = {}) {
       ).join("");
       return `<article class="calc-card"><h2 title="${node.name}">${label(node)}</h2>
         <h3>σ <span>${unitFor(info, "sigma", 0)}</span></h3><div class="orders">${panels("sigma")}</div>
+        <p class="sigma-check">σ is shown as an energy-balance check, not a damage measure.</p>
         <h3>P <span>${unitFor(info, "boundary_power", 0)}</span></h3><div class="orders">${panels("boundary_power")}</div></article>`;
     }).join("");
     lastDraw = { blocks, info, token };

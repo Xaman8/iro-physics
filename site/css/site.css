@@ -99,7 +99,7 @@ h1 {
 .dom-legend li { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .dom-legend i { width: 10px; height: 10px; border-radius: 50%; display: block; }
 .ex-note { margin: 8px 0 12px; color: var(--muted); max-width: 78ch; }
-.tree { padding: 8px 0 12px; overflow-x: auto; }
+.tree { padding: 8px 0 12px; overflow-x: auto; flex-shrink: 0; }
 .enode { display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 0; }
 .ecard { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .enode-btn {
@@ -126,7 +126,9 @@ h1 {
 .kids { display: flex; flex-wrap: nowrap; justify-content: center; gap: 18px 14px; position: relative; width: max-content; min-width: 100%; padding-top: 10px; }
 .kids > .enode { position: relative; z-index: 1; }
 .sibs { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
-.chart-row { display: flex; flex-direction: column; gap: 16px; }
+.chart-row { display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+.nest-root > .ex-note,
+.nest-root > .ex-bar { flex-shrink: 0; }
 .calc-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; width: 100%; }
 .calc-card h2 { font-family: var(--serif); font-weight: 500; font-size: 22px; margin: 0 0 8px; }
 .calc-card h3 { margin: 8px 0 4px; font-size: 13px; color: var(--muted); font-weight: 650; }
@@ -135,6 +137,7 @@ h1 {
 .orders figcaption { font-size: 11px; color: var(--faint); }
 .orders canvas { width: 100%; height: 120px; display: block; background: #fff; border-radius: 8px; border: 1px solid var(--line); }
 .orders figcaption span, .calc-card h3 span { color: var(--faint); font-weight: 500; }
+.sigma-check { margin: 4px 0 8px; color: var(--muted); font-size: 12.5px; }
 .pane .nest-root { height: 100%; overflow: auto; padding: 10px 12px 28px; }
 @media (min-width: 1100px) {
   body.app #v1views #physics { flex: 0 0 300px; }
@@ -142,7 +145,8 @@ h1 {
 }
 @media (max-width: 720px) {
   .enode-btn { min-width: 64px; padding: 7px 8px; }
-  .orders { grid-template-columns: repeat(4, minmax(200px, 1fr)); overflow-x: auto; }
+  .kids { flex-wrap: wrap; width: 100%; min-width: 0; justify-content: center; }
+  .orders { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .lede + .lede { color: var(--muted); font-size: 16.5px; }
 .actions { display: flex; gap: 10px; margin: 22px 0 8px; }
