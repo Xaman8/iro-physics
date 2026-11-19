@@ -68,6 +68,7 @@ parts.push(directionTable("No deadband", data.directionalityNoDeadband));
 parts.push(directionTable("R1.fluid held target-only", data.directionalityR1TargetOnly));
 
 parts.push(`<h2>v2 failure test</h2>`);
+parts.push(`<p class="note">v2 names a cause by fitting which single source port, through the plant transfer maps, best explains the effort-sensor readings in one DC channel plus five known line-frequency bands. Forecast damage then picks the cause. Port power is only a tie-break. v1 used port power directly. The derivative charts on the Apparatus page are display only and are never used for attribution.</p>`);
 parts.push(`<p class="note">Tokens from results/failure_table.csv (SAFE_FACTOR 2.0, 20 runs). An empty cell is an empty field in that file. Cross-envelope counts are from failure_summary.json and count true failures whose source and failing asset sit in different envelopes.</p>`);
 parts.push(csvTable(v2.failureTable, [
   ["scenario", "Scenario"],

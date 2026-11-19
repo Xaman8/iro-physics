@@ -2,6 +2,17 @@
 
 Status: OPEN / IN PROGRESS / ANSWERED / DROPPED. Raised = date and by whom.
 
+## Lead research questions and hypotheses (LOCKED 2026-11-19, Brant)
+These are questions (1) and (2) of the study. The RQ0 to RQ14 entries below keep their IDs as stable references and sit under these two.
+
+**(1) Research question.** Can we model how a physical effect in one asset is transferred to and affects another asset, regardless of the distance between them?
+
+**(1) Hypothesis.** Energy transfer modelled port to port through couplings predicts the effect on the receiving asset, whether the two are adjacent or many hops apart.
+
+**(2) Research question.** Does grouping assets into natural nested envelopes keep those asset-to-asset relationships intact, and does it reveal multi-asset behaviour that pairwise analysis misses?
+
+**(2) Hypothesis.** Envelope reduction keeps the cause-and-effect path between assets, and it exposes combined behaviour, such as convergent excitation, that no single asset pair shows.
+
 ## Primary question
 **RQ0. Cross-envelope failure prediction.** Can we predict the failure of a physical asset in one envelope that was caused by energy transferred from another envelope? (2026-11-19, Brant. IN PROGRESS: toy model.) **Update 2026-11-19 (v2 failure test, 20 seeds x 6 scenarios):** model-based predictors named the cross-envelope root cause (CT1 heat-rejection loss, HX1/HX2 failing) with ~165 d lead and 0 false alarms in 40 no-fault runs. Local trending alarmed in 40/40 no-fault runs and cannot name a remote cause. Limits: the failing asset was wrong in F1 (parametric fault fitted as injection). Convergent excitation (F4) was detected but over-predicted when the true mode was detuned. Under discovered envelopes only 4/20 F1 runs were cross-envelope, versus 20/20 under the engineer's grouping.
 

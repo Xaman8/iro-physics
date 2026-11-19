@@ -57,11 +57,15 @@ Internal entropy generation is `Dᵢ / Tᵢ`.
 
 ## What the bench compares
 
-The headline mechanism is a pulsation at the pump's fluid port, in a band at 0.5 rad/s. The pulsation power crosses the coupling into the heat-exchange envelope. Three readings of the same damage model are carried on the bench:
+The headline mechanism is a pulsation at the pump's fluid port, in a band at 0.5 rad/s. The pulsation power crosses the coupling into the heat-exchange envelope.
 
-- **Full model.** Every port: the steady effort, and the amplitude in the pulsation band. Root cause by transfer path analysis.
-- **Reduced envelope model.** Only the power on the couplings that cross an envelope boundary, plus a design-time map from that power to the entropy generation of each item inside. Root cause by walking the energy balance upstream.
-- **Local band sensor.** Only the ports inside the heat-exchange envelope, including the band at the exchanger.
+v2 names a cause by fitting which single source port, through the plant transfer maps, best explains the effort-sensor readings in one DC channel plus five known line-frequency bands. Forecast damage then picks the cause. Port power is only a tie-break. The derivative charts are display only and are never used for attribution. v1 used port power directly.
+
+Three readings of the same damage model are carried on the v1 bench:
+
+- **Full model.** Every port.
+- **Reduced envelope model.** Boundary couplings only.
+- **Local band sensor.** Ports inside the heat-exchange envelope.
 
 A fourth reading, conventional temperature and pressure with no band sensor, is in the results. It is the case where the local indicators are not the variable that carries the failure.
 

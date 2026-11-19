@@ -16,9 +16,20 @@ const full = v1.headline.FULL;
 const reduced = v1.headline.REDUCED;
 const local = v1.headline.LOCAL;
 
+const leads = [
+  {
+    n: "(1)",
+    text: "Energy transfer modelled port to port through couplings predicts the effect on the receiving asset, whether the two are adjacent or many hops apart.",
+  },
+  {
+    n: "(2)",
+    text: "Envelope reduction keeps the cause-and-effect path between assets, and it exposes combined behaviour, such as convergent excitation, that no single asset pair shows.",
+  },
+];
+
 const cards = [
   {
-    id: "H1",
+    id: "(3)",
     title: "Envelopes emerge from coupling physics",
     rq: "RQ1",
     status: "partly supported",
@@ -35,7 +46,7 @@ const cards = [
     ],
   },
   {
-    id: "H2",
+    id: "(4)",
     title: "A cross-envelope failure can be predicted from boundary-port power",
     rq: "RQ0",
     status: "partly supported",
@@ -51,7 +62,7 @@ const cards = [
     ],
   },
   {
-    id: "H3",
+    id: "(5)",
     title: "A distance ranks how large the effect is",
     rq: "RQ5",
     status: "partly supported",
@@ -66,7 +77,7 @@ const cards = [
     ]),
   },
   {
-    id: "H4",
+    id: "(6)",
     title: "Boundary sensors can tell sources inside one envelope apart",
     rq: "RQ12",
     status: "not supported",
@@ -82,7 +93,7 @@ const cards = [
     ],
   },
   {
-    id: "H5",
+    id: "(7)",
     title: "Convergent excitation is visible on the combined response",
     rq: "RQ9",
     status: "partly supported",
@@ -97,7 +108,15 @@ const cards = [
   },
 ];
 
-document.getElementById("hypotheses").innerHTML = cards.map((card) => `
+const leadHtml = leads.map((item) => `
+  <article class="hyp">
+    <span class="badge answered">Locked</span>
+    <h2>${item.n}</h2>
+    <p>${item.text}</p>
+  </article>
+`).join("");
+
+document.getElementById("hypotheses").innerHTML = leadHtml + cards.map((card) => `
   <article class="hyp">
     <span class="badge ${card.cls}">${card.status}</span>
     <h2>${card.id}. ${card.title}</h2>
