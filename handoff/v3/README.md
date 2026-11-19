@@ -116,7 +116,8 @@ Electricity is one input among several. Every boundary port belongs to one asset
 
 - sigma, kW/K = (1000 / T_amb) × Σ w_k D_k. Losses in work domains have w = 1. A thermal designed loss to ambient has w = 1 / (1 + e). A loss landing at heat port h has w = 1 / (1 + e_h). A thermal–thermal link has w = 1 / ((1 + e_s)(1 + e_t)), which is Q (1/T_cold − 1/T_hot) to first order, so heat moving down a temperature difference now generates entropy. The weights use the design temperatures.
 - `exergy_check.py` compares T_amb × sigma with the exact exergy destruction. At the design point they agree exactly. Off design (load 0.8–1.2, grid 0.97–1.03, ambient 0–20 K) the asset ratios run 0.850–1.227 (worst B-H1G) and the plant total 0.929–1.120. On 40 perturbed plants at 3 points each the asset ratios run 0.788–1.283 and the plant total 0.903–1.152. A linearisation without the weights fails outright here (it gives negative values), because the flame is at e ≈ 3.
-- Total sigma at design is 14.72 kW/K, or 4.388 MW of exergy destroyed. The largest are R-A1 5.80, BN-H1 5.16, K-B1 1.13 and DA-H1 0.78 kW/K.
+- The asset total (excluding couplings) at design is 14.72 kW/K, or 4.388 MW of exergy destroyed. It counts each asset's designed port losses (2.02 kW/K) and its bonds (12.70 kW/K). The largest are R-A1 5.80, BN-H1 5.16, K-B1 1.13 and DA-H1 0.78 kW/K.
+- The plant total including couplings is 29.77 kW/K at the design point: the asset total plus 15.06 kW/K on the couplings between assets. The largest couplings are thermal links: B-H1G→B-H1W 4.41, BN-H1→B-H1G 2.49, R-A1→J-A1 1.38 and E-A1T→R-A1 1.16 kW/K. The PLANT time series in `site_data/` uses this plant total.
 - sigma is a provisional proxy for damage. Bryant ties damage to the specific process that degrades a part, so designed losses are not damage in themselves.
 
 ### How the parameters were set
@@ -204,6 +205,7 @@ What the numbers say:
   - SAFE_FACTOR = 2.
 - Each line grows to LEVEL_END = 2.5 × the amplitude that would just reach the victim's endurance limit in the design model. End amplitudes in pu flow at the source port: X1 0.0167, X2 0.124, X3 0.0540 (0.0659 before the fixes).
 - The test runs hourly for 400 days.
+- Each seed also gets a scripted load step of ±10 % (+0.1 or −0.1 on the per-unit load) at a random day from 60 to 250, and a 10-day +8 K ambient heatwave at a random day from 40 to 250. For the headline run (X3, seed 3000) the load step is −0.1 at day 87.67 and the heatwave starts at day 235.1.
 
 **Predictors** (as in v2: transfer-path GLRT with a least-power tie-break, plus damage projection):
 
@@ -277,7 +279,8 @@ Run 2 (the run before the red-team fixes, kept as `results/pre_redteam_*`) had 0
 - Hierarchies, designed and discovered: id, name, level, parent, children, assets, boundary ports with what each couples to.
 - Couplings, and sibling edges at every level with domain and DC and fault-band power.
 - Time series for every node (plant, 48 envelopes, 99 assets) for the headline run, X3 seed 3000. Each holds sigma and boundary power at orders 0–3 (value, rate, acceleration, jerk), with Francis smoothing made causal on 2026-11-19: a trailing 49-sample moving average, then each backward difference re-smoothed by a trailing 9-sample average. No later sample is used, so the orders lag the hourly signal by 24, 28.5, 33 and 37.5 hours. sigma is in kW/K.
-- **Downsampled** from hourly to one sample per day (hour 12), 3 significant figures.
+- **Downsampled** from hourly to one sample per day (hour 12), 3 significant figures. The day axis is written to 2 decimals (`day[k] = k + 0.5`); before 2026-11-19 it was also rounded to 3 significant figures, which duplicated days from 100 on (251 unique of 400).
+- Headline run, PLANT sigma: about 32 kW/K before the load step (the ±10 % perturbed plant reads 31.77 kW/K at design inputs, against 29.77 for the design plant). The scripted −0.1 load step at day 87.67 brings it down to about 26.5 kW/K over the next two days, and boundary power drops from about 2.94 to 2.0 MW at the same time. The first two days read high (34.9 kW/K at day 0.5) because the 49-hour average has not filled yet: at day 0.5 it holds only 13 hours, all on the high half of the daily load cycle.
 
 ## Figures
 
