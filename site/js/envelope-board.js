@@ -105,7 +105,7 @@ function nearest(days, day) {
   return best;
 }
 
-export function mountBoard(root) {
+export function mountBoard(root, { clock, onSpan } = {}) {
   root.classList.add("board-root");
   root.innerHTML = `
     <div class="board">
@@ -129,6 +129,7 @@ export function mountBoard(root) {
         </div>
         <div class="filters" data-filters></div>
         <p class="ex-note" data-chart-note></p>
+        <p class="now-read" data-now></p>
         <div class="axis-labels"><span data-axis-left></span><span data-axis-right></span></div>
         <div class="chart-stage">
           <canvas data-chart></canvas>
@@ -155,6 +156,7 @@ export function mountBoard(root) {
   const readout = root.querySelector("[data-readout]");
   const legendEl = root.querySelector("[data-legend]");
   const plantCaption = root.querySelector("[data-plant-caption]");
+  const nowEl = root.querySelector("[data-now]");
   const notice = root.querySelector("[data-notice]");
   const nav = root.querySelector("[data-nav]");
   const navToggle = root.querySelector("[data-nav-toggle]");
@@ -175,6 +177,59 @@ export function mountBoard(root) {
   let meta = null;
   let chartToken = 0;
   let plot = null;
+  let lastSample = -1;
+
+  function cursorDay() {
+    return clock ? Number(clock.day) : null;
+  }
+
+  function sampleSeries(series, key, day) {
+    if (!series || day == null) return null;
+    const row = series.row?.[key]?.[0];
+    if (!row) return null;
+    const value = Number(row[nearest(series.day, day)]);
+    return Number.isFinite(value) ? value : null;
+  }
+
+  function liveValue(id, key) {
+    const day = cursorDay();
+    if (day == null || !plot) return null;
+    const block = plot.blocks.find((item) => item.child.id === id);
+    return sampleSeries(block?.series, key, day);
+  }
+
+  function renderNow() {
+    const day = cursorDay();
+    if (day == null) { nowEl.textContent = ""; return; }
+    let extra = "";
+    if (highlight && plot) {
+      const block = plot.blocks.find((item) => item.child.id === highlight);
+      if (block?.series) {
+        const sigma = sampleSeries(block.series, "sigma", day);
+        const power = sampleSeries(block.series, "boundary_power", day);
+        extra = ` · ${labelOf(block.child)} σ ${sig3(sigma)} ${orderUnit(plot.info, "sigma", 0)} · P ${sig3(power)} ${orderUnit(plot.info, "boundary_power", 0)}`;
+      }
+    }
+    nowEl.textContent = `Day ${sig3(day)}${extra}`;
+  }
+
+  function publishSpan() {
+    if (!onSpan || !meta) return;
+    const days = plot?.blocks?.find((item) => item.series)?.series.day;
+    if (!days?.length) return;
+    const onset = meta.fault_onset_day;
+    const failure = meta.first_failure?.day;
+    const fault = windowMode === "fault" && onset != null && failure != null;
+    onSpan({
+      min: fault ? Number(onset) : Number(days[0]),
+      max: fault ? Number(failure) : Number(days[days.length - 1]),
+      count: days.length,
+      scenario: meta.scenario,
+      seed: meta.seed,
+      onset: onset != null ? Number(onset) : null,
+      failure: failure != null ? Number(failure) : null,
+    });
+  }
 
   function pack() { return packs[mode]; }
   function byId() { return pack().byId; }
@@ -250,6 +305,7 @@ export function mountBoard(root) {
       renderDiagram();
       draw();
       renderLegend();
+      renderNow();
     }, 220);
   });
   diagramEl.addEventListener("dblclick", (event) => {
@@ -274,6 +330,7 @@ export function mountBoard(root) {
     renderDiagram();
     draw();
     renderLegend();
+    renderNow();
   });
 
   const watcher = new ResizeObserver(() => { if (plot) draw(); });
@@ -467,14 +524,23 @@ export function mountBoard(root) {
         const shift = (index - (list.length - 1) / 2) * 7;
         const mid = (x1 + x2) / 2 + shift;
         const lift = 78 - Math.min(46, Math.abs(x2 - x1) * 0.08);
-        lines.push(`<path d="M ${x1.toFixed(1)} ${y1} Q ${mid.toFixed(1)} ${lift.toFixed(1)} ${x2.toFixed(1)} ${y2}" fill="none" stroke="${DOMAIN[edge.domain] || "#888"}" stroke-width="2.2" stroke-linecap="round"><title>${esc(edge.domain)}</title></path>`);
+        const pa = liveValue(edge.a, "boundary_power");
+        const pb = liveValue(edge.b, "boundary_power");
+        const flow = pa != null && pb != null ? (Math.abs(pa) + Math.abs(pb)) / 2 : null;
+        const width = flow == null ? 2.2 : 1.2 + 4.5 * (flow / Math.max(0.001, ...children.map((child) => Math.abs(liveValue(child.id, "boundary_power") || 0))));
+        lines.push(`<path d="M ${x1.toFixed(1)} ${y1} Q ${mid.toFixed(1)} ${lift.toFixed(1)} ${x2.toFixed(1)} ${y2}" fill="none" stroke="${DOMAIN[edge.domain] || "#888"}" stroke-width="${width.toFixed(2)}" stroke-linecap="round"><title>${esc(edge.domain)}</title></path>`);
       });
     }
+    const sigmaNow = children.map((child) => liveValue(child.id, "sigma")).filter((value) => value != null && value > 0);
+    const maxSigma = Math.max(0.001, ...sigmaNow);
     const rects = children.map((child) => {
       const box = boxes[child.id];
       const on = highlight === child.id;
+      const sigma = liveValue(child.id, "sigma");
+      const level = sigma != null && sigma > 0 ? Math.max(0, Math.min(1, sigma / maxSigma)) : 0;
+      const fill = level ? `rgba(15,92,86,${(0.1 + 0.55 * level).toFixed(3)})` : (on ? "#e5f2f0" : "#fff");
       return `<g data-child="${esc(child.id)}" tabindex="0" role="button" aria-pressed="${on ? "true" : "false"}">
-        <rect x="${box.x.toFixed(1)}" y="${box.y}" width="${box.w}" height="${box.h}" rx="10" fill="${on ? "#e5f2f0" : "#fff"}" stroke="${on ? "#0f5c56" : "#e0d8cb"}" stroke-width="${on ? 2.4 : 1}"></rect>
+        <rect x="${box.x.toFixed(1)}" y="${box.y}" width="${box.w}" height="${box.h}" rx="10" fill="${fill}" stroke="${on ? "#0f5c56" : "#e0d8cb"}" stroke-width="${on ? 2.4 : 1}"></rect>
         <text x="${(box.x + box.w / 2).toFixed(1)}" y="${box.y + 29}" text-anchor="middle" font-size="13" font-weight="650" fill="#1c1915">${esc(labelOf(child))}</text>
         <title>${esc(child.name)}</title>
       </g>`;
@@ -576,6 +642,8 @@ export function mountBoard(root) {
     }
     plot = { blocks, info, multi, token };
     renderLegend();
+    renderNow();
+    publishSpan();
     requestAnimationFrame(() => draw());
   }
 
@@ -720,7 +788,8 @@ export function mountBoard(root) {
       ctx.globalAlpha = dim ? 0.15 : 1;
       ctx.lineWidth = trace.order === 0 ? 2 : trace.order === 1 ? 1.5 : 1.15;
       if (trace.measure === "boundary_power") ctx.setLineDash(trace.order === 0 ? [6, 3] : [2, 2]);
-      idx.forEach((index, n) => {
+      const reveal = idx.filter((index) => !clock || Number(days[index]) <= Number(clock.day) + 1e-6);
+      reveal.forEach((index, n) => {
         const value = trace.aligned[index];
         if (!Number.isFinite(value)) return;
         const x = xDay(days[index]);
@@ -731,6 +800,22 @@ export function mountBoard(root) {
       ctx.stroke();
       ctx.restore();
     });
+    if (clock && Number(clock.day) >= d0 && Number(clock.day) <= d1) {
+      const x = xDay(clock.day);
+      ctx.save();
+      ctx.strokeStyle = "#0f5c56";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = "#0f5c56";
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(sig3(clock.day), x, padT - 1);
+    }
     const marks = [
       info && info.fault_onset_day != null ? { day: Number(info.fault_onset_day), label: "onset", color: "#8a6d12", dash: [3, 3] } : null,
       { day: loadStepDay(info), label: "load", color: "rgba(28,25,21,0.45)", dash: [1, 3] },
@@ -817,6 +902,20 @@ export function mountBoard(root) {
     const left = Math.min(rect.width - 220, x + 12);
     readout.style.left = `${Math.max(8, left)}px`;
     readout.style.top = "28px";
+  }
+
+  if (clock) {
+    clock.subscribe(() => {
+      if (!packs[mode]) return;
+      const days = plot?.blocks?.find((item) => item.series)?.series.day;
+      const sample = days ? nearest(days, clock.day) : -1;
+      if (sample !== lastSample) {
+        lastSample = sample;
+        renderDiagram();
+      }
+      renderNow();
+      if (plot) draw();
+    });
   }
 
   ensureCouplings().then(() => ensurePack()).then(() => selectParent("PLANT"));

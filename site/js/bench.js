@@ -40,7 +40,21 @@ faultSelect.value = fault.id;
 const physics = mountPhysics(document.getElementById("physics"), {
   plant, scenario, getFault: () => fault, clock,
 });
-mountBoard(document.getElementById("envelope"));
+const v3clock = new Clock({ min: 0.5, max: 1, day: 1 });
+let v3span = null;
+let transport = "v3";
+mountBoard(document.getElementById("envelope"), {
+  clock: v3clock,
+  onSpan(span) {
+    v3span = span;
+    const atEnd = v3clock.max <= 1 || Math.abs(v3clock.day - v3clock.max) < 0.51;
+    v3clock.min = span.min;
+    v3clock.max = span.max;
+    v3clock.day = atEnd ? span.max : Math.min(span.max, Math.max(span.min, v3clock.day));
+    v3clock.emit();
+    if (transport === "v3") syncBar();
+  },
+});
 physics.focusAsset(params.get("asset") || fault.targetAssetId);
 physics.setFault();
 
@@ -54,26 +68,67 @@ function describeRun() {
 }
 describeRun();
 
+const francis = document.getElementById("francis");
+function activeClock() {
+  return transport === "v3" ? v3clock : clock;
+}
+function syncBar() {
+  const current = activeClock();
+  const scrub = document.getElementById("scrub");
+  scrub.min = String(current.min);
+  scrub.max = String(current.max);
+  scrub.step = transport === "v3" ? "0.5" : "0.05";
+  if (document.activeElement !== scrub) scrub.value = String(current.day);
+  const dayRead = document.getElementById("dayRead");
+  if (transport === "v3" && v3span) {
+    dayRead.textContent = `Day ${current.day.toFixed(2)} / ${current.max.toFixed(1)} · ${v3span.count} days`;
+    document.getElementById("runNote").textContent = `${v3span.scenario} seed ${v3span.seed} · onset ${text(v3span.onset)} · failure ${text(v3span.failure)}`;
+  } else {
+    dayRead.textContent = `Day ${current.day.toFixed(2)} / ${current.max.toFixed(0)}`;
+    describeRun();
+  }
+  const midway = current.day > current.min + 0.05 && current.day < current.max - 0.05;
+  document.getElementById("play").textContent = current.playing ? "Pause" : midway ? "Play" : "Replay";
+}
 document.getElementById("play").addEventListener("click", () => {
-  if (clock.playing) clock.pause();
-  else if (clock.day > 0.05 && clock.day < clock.max - 0.05) clock.play();
-  else clock.restart();
+  const current = activeClock();
+  const francisOpen = francis && francis.open;
+  if (current.playing) {
+    current.pause();
+    if (francisOpen) clock.pause();
+  } else if (current.day > current.min + 0.05 && current.day < current.max - 0.05) {
+    current.play();
+    if (francisOpen) clock.play();
+  } else {
+    current.restart();
+    if (francisOpen) clock.restart();
+  }
 });
-document.getElementById("reset").addEventListener("click", () => clock.reset());
-document.getElementById("speed").addEventListener("input", (event) => clock.setSpeed(event.target.value));
+document.getElementById("reset").addEventListener("click", () => {
+  activeClock().reset();
+  if (francis && francis.open) clock.reset();
+});
+document.getElementById("speed").addEventListener("input", (event) => {
+  v3clock.setSpeed(event.target.value);
+  clock.setSpeed(event.target.value);
+});
 document.getElementById("scrub").addEventListener("input", (event) => {
-  clock.pause();
-  clock.setDay(Number(event.target.value));
+  const current = activeClock();
+  current.pause();
+  current.setDay(Number(event.target.value));
 });
 const v1views = document.getElementById("v1views");
 const v2views = document.getElementById("v2views");
 const plantPick = document.getElementById("plantPick");
 function applyPlant() {
   const v2 = plantPick.value === "v2";
+  transport = v2 ? "v1" : "v3";
   v1views.hidden = v2;
   v2views.hidden = !v2;
   document.getElementById("runNote").hidden = v2;
-  if (v2) clock.pause();
+  v3clock.pause();
+  clock.pause();
+  syncBar();
 }
 plantPick.addEventListener("change", applyPlant);
 if (params.get("plant") === "v2") {
@@ -85,21 +140,23 @@ faultSelect.addEventListener("change", () => {
   fault = scenario.faults.find((item) => item.id === faultSelect.value);
   physics.focusAsset(fault.targetAssetId);
   physics.setFault();
-  describeRun();
+  syncBar();
 });
 
-clock.subscribe(() => {
-  const scrub = document.getElementById("scrub");
-  if (document.activeElement !== scrub) scrub.value = String(clock.day);
-  document.getElementById("dayRead").textContent = `Day ${clock.day.toFixed(2)} / ${clock.max.toFixed(0)}`;
-  const midway = clock.day > 0.05 && clock.day < clock.max - 0.05;
-  document.getElementById("play").textContent = clock.playing ? "Pause" : midway ? "Play" : "Replay";
-});
+function follow(source) {
+  source.subscribe(() => {
+    if (activeClock() === source) syncBar();
+  });
+}
+follow(clock);
+follow(v3clock);
 
 window.addEventListener("keydown", (event) => {
   if (event.code !== "Space") return;
   if (/INPUT|SELECT|TEXTAREA/.test(event.target.tagName)) return;
   event.preventDefault();
-  if (clock.playing) clock.pause();
-  else clock.play();
+  const current = activeClock();
+  if (current.playing) current.pause();
+  else if (current.day > current.min + 0.05 && current.day < current.max - 0.05) current.play();
+  else current.restart();
 });
