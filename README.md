@@ -1,6 +1,6 @@
 # IRO Physics
 
-A static site for the Inverted Reliability Ontology. The bench apparatus is the interactive experiment: a toy plant in which a pump pulsation in one envelope crosses a boundary and damages heat exchanger HX1 in another. Entropy generation is the damage proxy.
+A static site for the Inverted Reliability Ontology. The bench apparatus is the interactive experiment: a toy plant in which a pump pulsation in one envelope crosses a boundary and damages heat exchanger HX1 in another. In this v1 toy, entropy generation is the damage proxy. Since 2026-11-19 (red team, approved by Brant) the study keeps entropy generation as a power and energy-balance check, not as the damage measure. Damage is to be tracked with mechanism-specific coordinates, with per-mechanism entropy and its own coefficient B_i only where B_i is calibrated (RQ10: not on its own).
 
 The audience is the Xaman8 team. The pages run Overview, (1) Research Questions, (2) Hypotheses, (3) Model, (4) Experimental Design, Apparatus, Results, Paper. Only those four are numbered. The apparatus page is still headed “Bench apparatus”.
 

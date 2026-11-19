@@ -16,6 +16,7 @@ const methodName = {
 const parts = [];
 parts.push(`<p class="kicker">Study files</p><h1>What the runs found</h1>`);
 parts.push(`<p class="note">Every figure below is the study figure. Every number is copied from the result files named in the page source. A dash is a null or a non-number in that file.</p>`);
+parts.push(`<p class="note">Read these as checks of the method against itself. In every toy test the true plant is the model plant with ±10% parameter noise and the same graph. Attribution picks one source even when the sensors cannot separate several. In v1 entropy generation is the damage measure; since 2026-11-19 the study keeps it as a balance check only (RQ10). The mechanical port carries torsion only. See XT, XI and XM on the <a href="design.html">Experimental Design</a> page.</p>`);
 
 parts.push(`<h2>v1 cross-envelope failure</h2>`);
 parts.push(headlineTable(data.headline));
