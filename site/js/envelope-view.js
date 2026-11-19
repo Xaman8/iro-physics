@@ -1,4 +1,4 @@
-import { compact, dayIndex } from "./format.js";
+import { dayIndex, sig3 } from "./format.js";
 
 const DOMAIN = {
   mechanical: "#1f7a4d",
@@ -28,14 +28,20 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
         </select></label>
       </div>
       <div class="legend" id="envLegend"></div>
+      <p class="legend-note">σ is entropy generation, pu. P is boundary power, pu. 0–3 are derivative order.</p>
       <div class="env-stage" id="envStage">
         <svg class="env-svg" id="envSvg"></svg>
         <div class="env-cols" id="envCols"></div>
       </div>
       <div class="below">
         <div class="deriv-head">
-          <label>Instrument <select id="envInstrument"></select></label>
-          <p>0th to 3rd order. Orders 1–3 are finite differences of the daily mean, per day.</p>
+          <div data-focus hidden>
+            <b data-focus-title></b>
+            <span data-focus-toggle></span>
+            <button type="button" class="btn" id="clearFocus">Instruments</button>
+          </div>
+          <label data-instrument-label>Instrument <select id="envInstrument"></select></label>
+          <p>0–3 from the daily mean. Click a node for its calculus.</p>
         </div>
         <div class="deriv-grid" id="envDeriv"></div>
         <div class="warn-grid" id="envWarn"></div>
@@ -51,6 +57,9 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
   let mode = initialMode === "reduced" ? "reduced" : "grouped";
   let instrument = 0;
   let derivs = [];
+  let focus = null;
+  let packs = { asset: {}, envelope: {} };
+  let boundaryMax = 0;
 
   root.querySelector("#envLegend").innerHTML = plant.domains.map((d) =>
     `<span><i style="background:${DOMAIN[d.id]}"></i>${d.id}</span>`
@@ -87,35 +96,65 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
 
   function build() {
     const fault = getFault();
+    rebuildPacks(fault);
+    boundaryMax = 0;
     const leaves = plant.envelopes.filter((e) => e.leaf).slice().sort((a, b) => meanX(a, assetById) - meanX(b, assetById));
-    cols.innerHTML = leaves.map((env) => {
-      const fill = ENV_FILL[env.id] || "#f4f1ea";
-      if (mode === "reduced") {
-        const ports = boundaryPorts(env.id);
+    const order = leaves.map((env) => env.id);
+    cols.classList.toggle("is-reduced", mode === "reduced");
+    if (mode === "reduced") {
+      cols.innerHTML = `<div class="reduced-row">${leaves.map((env) => reducedNode(env, order)).join("")}</div>`;
+    } else {
+      cols.innerHTML = leaves.map((env) => {
+        const fill = ENV_FILL[env.id] || "#f4f1ea";
+        const assets = env.assetIds.slice().sort((a, b) => {
+          const A = assetById[a], B = assetById[b];
+          return A.y_m - B.y_m || A.x_m - B.x_m;
+        });
         return `<section class="env-col" data-env="${env.id}" data-fill="${fill}">
           <header><b>${env.short}</b> ${escapeHtml(env.name)}</header>
           <div class="env-stack">
-            <article class="asset" data-env-card="${env.id}">
-              <header><b>${env.short}</b><span>envelope</span></header>
-              <div class="ports">${ports.map(portDot).join("")}</div>
-              <div class="meter" title="Sum of entropy generation, divided by the sum of Safe limits"><i data-sum="${env.id}"></i></div>
-              <span class="nums" data-env-nums="${env.id}"></span>
-            </article>
+            ${assets.map((id) => assetCard(id)).join("")}
           </div>
         </section>`;
-      }
-      const assets = env.assetIds.slice().sort((a, b) => {
-        const A = assetById[a], B = assetById[b];
-        return A.y_m - B.y_m || A.x_m - B.x_m;
-      });
-      return `<section class="env-col" data-env="${env.id}" data-fill="${fill}">
-        <header><b>${env.short}</b> ${escapeHtml(env.name)}</header>
-        <div class="env-stack">
-          ${assets.map((id) => assetCard(id)).join("")}
-        </div>
-      </section>`;
-    }).join("");
+      }).join("");
+    }
     buildWires(fault);
+  }
+
+  function reducedNode(env, order) {
+    const ports = boundaryPorts(env.id);
+    const my = order.indexOf(env.id);
+    const left = [];
+    const right = [];
+    for (const port of ports) {
+      (portSide(env.id, port.id, order, my) === "left" ? left : right).push(port);
+    }
+    const fill = ENV_FILL[env.id] || "#f4f1ea";
+    return `<article class="reduced-node" data-env-card="${env.id}" style="background:${fill}" title="${escapeHtml(env.name)}">
+      <header><b>${env.short}</b> ${escapeHtml(env.name)}</header>
+      <div class="edge left">${left.map(portDot).join("")}</div>
+      <div class="edge right">${right.map(portDot).join("")}</div>
+      <span class="nums">σ <b data-env-nums="${env.id}"></b></span>
+      <div class="meter"><i data-sum="${env.id}"></i></div>
+      <div class="calc" data-calc="sigma"></div>
+      <span class="nums">P <b data-power-nums="${env.id}"></b></span>
+      <div class="calc" data-calc="power"></div>
+      <span class="near" data-near="${env.id}"></span>
+    </article>`;
+  }
+
+  function portSide(envelopeId, portId, order, my) {
+    let left = 0;
+    let right = 0;
+    for (const coupling of plant.couplings) {
+      if (!coupling.boundary) continue;
+      if (coupling.sourcePortId !== portId && coupling.targetPortId !== portId) continue;
+      const other = coupling.sourceEnvelopeId === envelopeId ? coupling.targetEnvelopeId : coupling.sourceEnvelopeId;
+      const j = order.indexOf(other);
+      if (j < my) left += 1;
+      else right += 1;
+    }
+    return left > right ? "left" : "right";
   }
 
   function assetCard(id) {
@@ -126,6 +165,7 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
       <div class="ports">${ports.map(portDot).join("")}</div>
       <div class="meter" title="Entropy generation against the Safe limit"><i data-meter="${id}"></i></div>
       <span class="nums" data-nums="${id}"></span>
+      <div class="calc" data-calc="sigma"></div>
     </article>`;
   }
 
@@ -155,6 +195,48 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
     svg._wires = list;
   }
 
+  function rebuildPacks(fault) {
+    packs = { asset: {}, envelope: {} };
+    const n = fault.assets[plant.assets[0].id].sigma.length;
+    for (const asset of plant.assets) packs.asset[asset.id] = pack(fault.assets[asset.id].sigma);
+    for (const env of plant.envelopes) {
+      const sigma = Array(n).fill(0);
+      for (const id of env.assetIds) {
+        fault.assets[id].sigma.forEach((v, i) => { sigma[i] += Number(v); });
+      }
+      const power = Array(n).fill(0);
+      for (const coupling of plant.couplings) {
+        if (!coupling.boundary) continue;
+        if (coupling.sourceEnvelopeId !== env.id && coupling.targetEnvelopeId !== env.id) continue;
+        const row = fault.couplings[coupling.id];
+        const sign = coupling.targetEnvelopeId === env.id ? 1 : -1;
+        for (let i = 0; i < n; i++) power[i] += sign * (Number(row.powerDc[i]) + Number(row.powerAc[i]));
+      }
+      packs.envelope[env.id] = { sigma: pack(sigma), power: pack(power), sigma0: sigma, power0: power };
+    }
+  }
+
+  function boundaryPeak(fault) {
+    if (boundaryMax) return boundaryMax;
+    for (const coupling of plant.couplings) {
+      if (!coupling.boundary) continue;
+      const row = fault.couplings[coupling.id];
+      for (let i = 0; i < row.powerDc.length; i++) {
+        boundaryMax = Math.max(boundaryMax, Math.abs(Number(row.powerDc[i]) + Number(row.powerAc[i])));
+      }
+    }
+    boundaryMax = boundaryMax || 1;
+    return boundaryMax;
+  }
+
+  function boundaryBow(coupling) {
+    const nodes = [...cols.querySelectorAll("[data-env-card]")];
+    if (!nodes.length) return -8;
+    const order = nodes.map((node) => node.dataset.envCard);
+    const gap = Math.abs(order.indexOf(coupling.sourceEnvelopeId) - order.indexOf(coupling.targetEnvelopeId));
+    return gap > 1 ? -46 : -8;
+  }
+
   function paint() {
     const fault = getFault();
     const day = clock.day;
@@ -181,37 +263,57 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
       meter.style.width = Math.min(100, (sigma / safe) * 100) + "%";
       meter.className = "region-" + region;
       const nums = card.querySelector("[data-nums]");
-      const limit = failed ? " · limit" : "";
-      nums.textContent = `σ ${compact(sigma)}${damage > 0.0005 || failed ? " · damage " + compact(damage) : ""}${limit}`;
+      nums.textContent = `σ ${sig3(sigma)}${failed ? " · limit" : ""}`;
+      fillCalc(card.querySelector("[data-calc]"), packs.asset[asset.id], day);
+      card.classList.toggle("is-focus", focus && focus.kind === "asset" && focus.id === asset.id);
     }
   }
 
   function paintReduced(fault, day) {
+    const i = dayIndex(day, fault.assets[plant.assets[0].id].sigma.length);
     for (const env of plant.envelopes) {
-      const nums = cols.querySelector(`[data-env-nums="${env.id}"]`);
-      const bar = cols.querySelector(`[data-sum="${env.id}"]`);
       const card = cols.querySelector(`[data-env-card="${env.id}"]`);
-      if (!nums || !bar) continue;
-      let sigma = 0;
+      if (!card) continue;
+      const bag = packs.envelope[env.id];
+      const sigma = bag.sigma0[i];
+      const power = bag.power0[i];
       let safe = 0;
-      let worst = null;
+      let nearest = null;
       for (const id of env.assetIds) {
         const row = fault.assets[id];
-        const i = dayIndex(day, row.sigma.length);
-        sigma += Number(row.sigma[i]);
-        safe += Number(row.safe[i]);
-        if (fault.failureDay[id] != null && day >= fault.failureDay[id]) worst = id;
+        const s = Number(row.sigma[i]);
+        const sf = Number(row.safe[i]);
+        const d = Number(row.damage[i]);
+        safe += sf;
+        const failed = fault.failureDay[id] != null && day >= fault.failureDay[id];
+        const ratio = sf > 0 ? s / sf : 0;
+        if (!nearest || failed > nearest.failed || (failed === nearest.failed && (d > nearest.damage || ratio > nearest.ratio))) {
+          nearest = { id, damage: d, failed, ratio };
+        }
       }
-      bar.style.width = Math.min(100, (sigma / safe) * 100) + "%";
-      card.classList.toggle("at-limit", Boolean(worst));
-      nums.textContent = worst ? `${worst} at the limit` : `σ ${compact(sigma)}`;
+      card.querySelector("[data-env-nums]").textContent = sig3(sigma);
+      card.querySelector("[data-power-nums]").textContent = sig3(power);
+      const meter = card.querySelector("[data-sum]");
+      if (meter) {
+        meter.style.width = Math.min(100, safe > 0 ? (sigma / safe) * 100 : 0) + "%";
+        meter.className = sigma <= safe ? "region-safe" : "region-damage";
+      }
+      const near = card.querySelector("[data-near]");
+      const showNear = nearest && (nearest.failed || nearest.damage > 0.001 || nearest.ratio > 1);
+      near.textContent = showNear ? `nearest ${nearest.id}` : "";
+      card.title = `${env.name}. σ ${sig3(sigma)} pu. P ${sig3(power)} pu.` +
+        (nearest ? ` Nearest ${nearest.id}, damage ${sig3(nearest.damage)} of endurance.` : "");
+      card.classList.toggle("at-limit", Boolean(nearest && nearest.failed));
+      card.classList.toggle("is-focus", focus && focus.kind === "envelope" && focus.id === env.id);
+      fillCalc(card.querySelector('[data-calc="sigma"]'), bag.sigma, day);
+      fillCalc(card.querySelector('[data-calc="power"]'), bag.power, day);
     }
   }
 
   function paintWires(fault, day) {
     const scale = acScale(fault);
     const rect = stage.getBoundingClientRect();
-    const backs = [...cols.querySelectorAll(".env-col")].map((col) => {
+    const backs = mode === "reduced" ? "" : [...cols.querySelectorAll(".env-col")].map((col) => {
       const r = col.getBoundingClientRect();
       const x = r.left - rect.left;
       const y = r.top - rect.top;
@@ -226,13 +328,16 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
       const row = fault.couplings[coupling.id];
       const i = dayIndex(day, row.powerDc.length);
       const power = Number(row.powerDc[i]) + Number(row.powerAc[i]);
-      const width = 1.15 + 8 * Math.sqrt(Math.min(1.4, Math.abs(power) / (scale * 1.2 + 0.05)));
+      const span = coupling.boundary ? boundaryPeak(fault) : scale;
+      const width = coupling.boundary
+        ? 2.2 + 8 * Math.sqrt(Math.abs(power) / span)
+        : 1.15 + 3 * Math.sqrt(Math.min(1, Math.abs(power) / span));
       const forward = power >= 0;
-      const bow = coupling.boundary ? -14 : 0;
+      const bow = coupling.boundary ? boundaryBow(coupling) : 0;
       const from = forward ? a : b;
       const to = forward ? b : a;
       const dash = coupling.intent === "parasitic" ? ' stroke-dasharray="4 4"' : "";
-      const title = `${coupling.id} · P ${compact(power)} pu`;
+      const title = `${coupling.id} · P ${sig3(power)} pu`;
       paths.push(`<path d="${curve(from, to, bow)}" fill="none" stroke="${DOMAIN[coupling.domain]}" stroke-width="${width.toFixed(2)}" stroke-linecap="round" opacity="${coupling.boundary ? 0.95 : 0.7}"${dash}><title>${escapeHtml(title)}</title></path>`);
       if (Math.abs(power) > 1e-3) arrows.push(arrow(to, from, DOMAIN[coupling.domain]));
     }
@@ -250,7 +355,27 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
   }
 
   function paintDeriv(fault, day) {
-    const orders = derivs[instrument];
+    const label = root.querySelector("[data-instrument-label]");
+    const focusBar = root.querySelector("[data-focus]");
+    let orders = derivs[instrument];
+    if (focus) {
+      orders = focus.kind === "asset"
+        ? packs.asset[focus.id]
+        : packs.envelope[focus.id][focus.which];
+      label.hidden = true;
+      focusBar.hidden = false;
+      const env = plant.envelopes.find((item) => item.id === focus.id);
+      root.querySelector("[data-focus-title]").textContent = focus.kind === "asset"
+        ? `${focus.id} · σ`
+        : `${env.short} · ${focus.which === "power" ? "P" : "σ"}`;
+      const toggle = root.querySelector("[data-focus-toggle]");
+      toggle.innerHTML = focus.kind === "envelope"
+        ? `<button type="button" class="btn" data-which="sigma">σ</button><button type="button" class="btn" data-which="power">P</button>`
+        : "";
+    } else {
+      label.hidden = false;
+      focusBar.hidden = true;
+    }
     if (!orders) return;
     const idx = dayIndex(day, orders[0].length);
     orders.forEach((series, order) => {
@@ -290,10 +415,10 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
       ctx.fillStyle = "#8a8276";
       ctx.font = "10px ui-monospace, monospace";
       ctx.textBaseline = "top";
-      ctx.fillText(compact(hi), pad, 0);
+      ctx.fillText(sig3(hi), pad, 0);
       ctx.textBaseline = "bottom";
-      ctx.fillText(compact(lo), pad, h);
-      root.querySelector(`[data-deriv="${order}"]`).textContent = compact(series[idx]);
+      ctx.fillText(sig3(lo), pad, h);
+      root.querySelector(`[data-deriv="${order}"]`).textContent = sig3(series[idx]);
     });
   }
 
@@ -327,7 +452,27 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
   }
 
   instrumentSelect.addEventListener("change", () => {
+    focus = null;
     instrument = Number(instrumentSelect.value);
+    paint();
+  });
+  root.querySelector("[data-focus]").addEventListener("click", (event) => {
+    if (event.target.id === "clearFocus") {
+      focus = null;
+      paint();
+      return;
+    }
+    if (event.target.dataset.which && focus) {
+      focus.which = event.target.dataset.which;
+      paint();
+    }
+  });
+  cols.addEventListener("click", (event) => {
+    const node = event.target.closest("[data-asset], [data-env-card]");
+    if (!node) return;
+    const which = event.target.closest("[data-calc]")?.dataset.calc || "sigma";
+    if (node.dataset.asset) focus = { kind: "asset", id: node.dataset.asset, which: "sigma" };
+    else focus = { kind: "envelope", id: node.dataset.envCard, which };
     paint();
   });
 
@@ -367,6 +512,43 @@ function arrow(to, from, color) {
   const x = to.x - ux * back;
   const y = to.y - uy * back;
   return `<path d="M ${to.x.toFixed(1)} ${to.y.toFixed(1)} L ${(x + px * 4).toFixed(1)} ${(y + py * 4).toFixed(1)} L ${(x - px * 4).toFixed(1)} ${(y - py * 4).toFixed(1)} Z" fill="${color}"/>`;
+}
+
+function pack(series) {
+  const y = series.map(Number);
+  const d1 = gradient(y);
+  const d2 = gradient(d1);
+  const d3 = gradient(d2);
+  return [y, d1, d2, d3];
+}
+
+function sparkSVG(series, day) {
+  const n = series.length;
+  const end = Math.max(0, Math.min(n - 1, Math.floor(day)));
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (let i = 0; i <= end; i++) {
+    if (series[i] < lo) lo = series[i];
+    if (series[i] > hi) hi = series[i];
+  }
+  if (!Number.isFinite(lo) || lo === hi) {
+    lo = (Number.isFinite(lo) ? lo : 0) - 1;
+    hi = (Number.isFinite(hi) ? hi : 0) + 1;
+  }
+  const w = 52;
+  const h = 16;
+  const pts = [];
+  for (let i = 0; i <= end; i++) {
+    const x = 1 + (i / Math.max(1, n - 1)) * (w - 2);
+    const y = 1 + (1 - (series[i] - lo) / (hi - lo)) * (h - 2);
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts.join(" ")}" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function fillCalc(host, orders, day) {
+  if (!host || !orders) return;
+  host.innerHTML = orders.map((series, i) => `<span class="mini"><i>${i}</i>${sparkSVG(series, day)}</span>`).join("");
 }
 
 function gradient(y) {
