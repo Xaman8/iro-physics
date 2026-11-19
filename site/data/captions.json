@@ -3,70 +3,64 @@
     {
       "file": "assets/explainer/explainer_1_plant.svg",
       "title": "The plant is assets joined by couplings",
-      "caption": "The toy plant has 11 assets, 21 ports and 13 couplings. Each coupling carries one domain of energy between ports on two assets. Energy changes domain only inside an asset, on a bond. The pump turns shaft power into fluid power."
+      "caption": "Each coupling links a port on one asset to a port on another and carries one kind of energy. This plant has 11 assets, 21 ports and 13 couplings."
+    },
+    {
+      "file": "assets/explainer/explainer_asset_ports.svg",
+      "title": "Every asset is an energy transfer function",
+      "caption": "Each asset has five ports, one per kind of energy: mechanical, fluid, thermal, electrical and chemical. Some ports are unused. Inside the asset, energy changes from one kind to another; between assets, it travels along couplings."
+    },
+    {
+      "file": "assets/explainer/explainer_all_to_all.svg",
+      "title": "The simplest view is every asset against every other",
+      "caption": "Allowing every port of every asset to couple to every port of every other gives about 25N² possible links, or 2.5 billion for 10,000 assets."
+    },
+    {
+      "file": "assets/explainer/explainer_sparse.svg",
+      "title": "Most of that is zeros, and the rest is linear",
+      "caption": "A real plant has only a few couplings per asset, so the math is a sparse linear system that a CPU or GPU solves quickly; our benchmark ran about 20 ms per update at 10,000 assets on one core. The cost rises sharply when the plant is densely interconnected, or when every vibration cycle is simulated in time."
     },
     {
       "file": "assets/explainer/explainer_2_envelopes.svg",
-      "title": "Grouping the plant into envelopes",
-      "caption": "The same plant grouped into 4 envelopes. 5 of the 13 couplings cross a boundary. In this toy model the groups were set by function. Finding them from coupling strength is not built yet."
+      "title": "What if we modelled it differently?",
+      "caption": "Group the assets into natural envelopes, found from how strongly they exchange energy. In the v1 toy plant the 4 envelopes were set by function, and 5 of 13 couplings cross a boundary. The v2 plant (32 assets) finds envelopes from coupling strength (see Results).",
+      "links": [
+        { "text": "Results", "href": "results.html" }
+      ]
     },
     {
       "file": "assets/explainer/explainer_3_envelope_as_asset.svg",
       "title": "Each envelope becomes one asset",
       "caption": "Each envelope folds into one block. Its ports are the ends of the 5 boundary couplings. The study below uses only the power on those couplings for the reduced model, and every port for the full model.",
       "stats": [
-        {
-          "label": "Runs in the study",
-          "value": 40
-        },
-        {
-          "label": "Full model, warned before failure",
-          "value": 40
-        },
-        {
-          "label": "Full model, median lead time (days)",
-          "value": 62.416666666666664
-        },
-        {
-          "label": "Full model, root cause envelope A",
-          "value": "40/40"
-        },
-        {
-          "label": "Reduced model, warned before failure",
-          "value": 40
-        },
-        {
-          "label": "Reduced model, median lead time (days)",
-          "value": 62.58333333333333
-        },
-        {
-          "label": "Reduced model, root cause envelope A",
-          "value": "40/40"
-        }
+        { "label": "Runs in the study", "value": 40 },
+        { "label": "Full model, warned before failure", "value": 40 },
+        { "label": "Full model, median lead time (days)", "value": 62.416666666666664 },
+        { "label": "Full model, root cause envelope A", "value": "40/40" },
+        { "label": "Reduced model, warned before failure", "value": 40 },
+        { "label": "Reduced model, median lead time (days)", "value": 62.58333333333333 },
+        { "label": "Reduced model, root cause envelope A", "value": "40/40" }
       ]
     },
     {
       "file": "assets/explainer/explainer_4_cross_envelope_failure.svg",
       "title": "A failure that crosses envelopes",
-      "caption": "Pulsation from the pump in envelope A travels the coupling P1.fluid \u2192 HX1.fluid (60 m, fluid) and the heat exchanger in envelope B reaches entropic endurance. The local band sensor and the reduced model are not the same on the source.",
+      "caption": "Pulsation from the pump in envelope A travels the coupling P1.fluid → HX1.fluid (60 m, fluid) and the heat exchanger in envelope B reaches entropic endurance. The local band sensor and the reduced model are not the same on the source.",
       "stats": [
-        {
-          "label": "Local band sensor, warned before failure",
-          "value": "40/40"
-        },
-        {
-          "label": "Local band sensor, median lead time (days)",
-          "value": 62.58333333333333
-        },
-        {
-          "label": "Local band sensor, root cause envelope A",
-          "value": "0/40"
-        },
-        {
-          "label": "Reduced model, root cause envelope A",
-          "value": "40/40"
-        }
+        { "label": "Local band sensor, warned before failure", "value": "40/40" },
+        { "label": "Local band sensor, median lead time (days)", "value": 62.58333333333333 },
+        { "label": "Local band sensor, root cause envelope A", "value": "0/40" },
+        { "label": "Reduced model, root cause envelope A", "value": "40/40" }
       ]
+    },
+    {
+      "file": "assets/explainer/explainer_trace_back.svg",
+      "title": "Detect it and trace it back",
+      "caption": "The instruments show the fault developing, and the model works backwards through the couplings to name the source.",
+      "link": {
+        "href": "design.html#three-way",
+        "label": "Three-way detection comparison"
+      }
     }
   ]
 }
