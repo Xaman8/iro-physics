@@ -7,16 +7,7 @@
   <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
-  <header class="top">
-    <a class="brand" href="index.html">IRO <span>Physics</span></a>
-    <nav>
-      <a href="index.html" aria-current="page">Overview</a>
-      <a href="bench.html">Bench apparatus</a>
-      <a href="method.html">Method</a>
-      <a href="results.html">Results</a>
-      <a href="paper.html">Paper</a>
-    </nav>
-  </header>
+  <header class="top" data-page="index.html"></header>
   <main class="wrap">
     <p class="kicker">Inverted Reliability Ontology</p>
     <h1>Can a failure in one envelope be predicted from energy that arrives from another, and how far is the cause?</h1>
@@ -24,11 +15,12 @@
     <p class="lede">The headline test is a pump pulsation in envelope A. The power crosses the boundary and heat exchanger HX1, in envelope B, reaches its limit. The drawings below are the plant. The numbers under them are counts from this plant and from the study files.</p>
     <div class="actions">
       <a class="btn primary" href="bench.html">Open the bench apparatus</a>
-      <a class="btn" href="results.html">Study numbers</a>
+      <a class="btn" href="questions.html">(1) Research questions</a>
     </div>
     <div class="story" id="story"></div>
   </main>
   <p class="foot">Toy model, per unit. The simulation is not a record of a real plant.</p>
+  <script type="module" src="js/nav.js"></script>
   <script type="module" src="js/home.js"></script>
 </body>
 </html>

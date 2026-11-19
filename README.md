@@ -2,7 +2,7 @@
 
 A static site for the Inverted Reliability Ontology. The bench apparatus is the interactive experiment: a toy plant in which a pump pulsation in one envelope crosses a boundary and damages heat exchanger HX1 in another. Entropy generation is the damage proxy.
 
-The audience is the Xaman8 team. The overview explains the question, the bench replays one run, the method page is the vocabulary and the formal model, and the results page shows the study figures and the numbers in the result files.
+The audience is the Xaman8 team. The pages run Overview, (1) Research Questions, (2) Hypotheses, (3) Model, (4) Experimental Design, Apparatus, Results, Paper. Only those four are numbered. The apparatus page is still headed “Bench apparatus”.
 
 The plant behind the bench is the v1 toy model in `model/`. A later plant can replace the two JSON files the pages read, without a server.
 

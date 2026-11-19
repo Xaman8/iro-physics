@@ -1,6 +1,9 @@
 import { text } from "./format.js";
 
-const data = await fetch("data/results.json").then((r) => r.json());
+const [data, v2] = await Promise.all([
+  fetch("data/results.json").then((r) => r.json()),
+  fetch("data/v2-results.json").then((r) => r.json()),
+]);
 const root = document.getElementById("results");
 const methods = ["FULL", "REDUCED", "LOCAL", "LOCAL_DC"];
 const methodName = {
@@ -14,7 +17,7 @@ const parts = [];
 parts.push(`<p class="kicker">Study files</p><h1>What the runs found</h1>`);
 parts.push(`<p class="note">Every figure below is the study figure. Every number is copied from the result files named in the page source. A dash is a null or a non-number in that file.</p>`);
 
-parts.push(`<h2>Cross-envelope failure</h2>`);
+parts.push(`<h2>v1 cross-envelope failure</h2>`);
 parts.push(headlineTable(data.headline));
 parts.push(errorTable(data.headline));
 parts.push(truthNote(data.headline._truth, "With the deadband used in the headline study"));
@@ -64,7 +67,60 @@ parts.push(`<p class="note">Excursion hours stored on the two checks that droppe
 parts.push(directionTable("No deadband", data.directionalityNoDeadband));
 parts.push(directionTable("R1.fluid held target-only", data.directionalityR1TargetOnly));
 
+parts.push(`<h2>v2 failure test</h2>`);
+parts.push(`<p class="note">Tokens from results/failure_table.csv (SAFE_FACTOR 2.0, 20 runs). An empty cell is an empty field in that file. Cross-envelope counts are from failure_summary.json and count true failures whose source and failing asset sit in different envelopes.</p>`);
+parts.push(csvTable(v2.failureTable, [
+  ["scenario", "Scenario"],
+  ["predictor", "Predictor"],
+  ["runs", "Runs"],
+  ["true_failures", "True failures"],
+  ["warned", "Warned"],
+  ["lead_median_d", "Lead median (d)"],
+  ["lead_IQR_d", "Lead IQR (d)"],
+  ["failing_asset_correct", "Failing asset"],
+  ["root_cause_correct", "Root cause"],
+  ["ttf_error_median_d", "TTF error (d)"],
+  ["alarms_no_failure", "Alarms, no failure"],
+  ["alarms_before_onset", "Alarms before onset"],
+]));
+parts.push(`<p class="note">Cross-envelope true failures, discovered envelopes: ${crossLine(v2, "discovered")}. Engineer grouping: ${crossLine(v2, "engineer")}.</p>`);
+parts.push(`<h3>SAFE_FACTOR 1.5, 10 runs</h3>`);
+parts.push(`<p class="note">results/failure_table_sf1.5.csv</p>`);
+parts.push(csvTable(v2.failureTableSf15, [
+  ["scenario", "Scenario"], ["predictor", "Predictor"], ["true_failures", "True failures"],
+  ["warned", "Warned"], ["lead_median_d", "Lead median (d)"], ["root_cause_correct", "Root cause"],
+  ["alarms_no_failure", "Alarms, no failure"],
+]));
+parts.push(`<h3>SAFE_FACTOR 3.0, 10 runs</h3>`);
+parts.push(`<p class="note">results/failure_table_sf3.csv</p>`);
+parts.push(csvTable(v2.failureTableSf3, [
+  ["scenario", "Scenario"], ["predictor", "Predictor"], ["true_failures", "True failures"],
+  ["warned", "Warned"], ["lead_median_d", "Lead median (d)"], ["failing_asset_correct", "Failing asset"],
+  ["root_cause_correct", "Root cause"], ["alarms_no_failure", "Alarms, no failure"],
+]));
+parts.push(`<h2>v2 propagation distance</h2>`);
+parts.push(`<p class="note">Spearman against log effect, from distance_rank_correlations.csv. Attenuation is reported with the study’s own caveat that it is partly circular.</p>`);
+parts.push(csvTable(v2.distanceRank, [
+  ["distance", "Distance"],
+  ["rho_pooled", "ρ pooled"],
+  ["p_pooled", "p"],
+  ["rho_within_mean", "ρ within source"],
+  ["rho_within_min", "within min"],
+  ["rho_within_max", "within max"],
+  ["n_sources", "sources"],
+]));
+parts.push(`<figure class="plate"><img src="assets/figures/fig1_discovered_envelopes.png" alt="Discovered envelopes"><figcaption><h2>Discovered envelopes</h2><p>Coupling graph of the 32-asset plant, coloured by the PF-louvain partition. Thick lines are couplings inside an envelope. Dotted lines are parasitic paths.</p></figcaption></figure>`);
+parts.push(`<figure class="plate"><img src="assets/figures/fig2_root_cause_false_alarms.png" alt="Root cause and false alarms"><figcaption><h2>Root cause and alarms</h2><p>Share of warned runs with the correct root cause, and share of no-fault runs with an alarm, by predictor. The counts are in the table above.</p></figcaption></figure>`);
+
 root.innerHTML = parts.join("\n");
+
+function crossLine(block, which) {
+  return ["F1", "F2", "F3", "F4", "F5", "C0"].map((sc) => {
+    const row = block.crossEnvelope[`${sc}:_cross_envelope_${which}`];
+    if (!row) return `${sc} —`;
+    return `${sc} ${row.n_cross}/${row.n}`;
+  }).join("; ");
+}
 
 function figure(fig) {
   return `<figure class="plate">

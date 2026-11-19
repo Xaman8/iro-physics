@@ -1,6 +1,7 @@
 import { Clock } from "./clock.js";
 import { mountPhysics } from "./physics-view.js";
 import { mountEnvelope } from "./envelope-view.js";
+import { mountV2 } from "./v2-graph.js";
 import { text } from "./format.js";
 
 const [plant, scenario] = await Promise.all([
@@ -17,9 +18,13 @@ const clock = new Clock({
   day: params.has("day") ? Number(params.get("day")) : 0,
 });
 
+const v2plant = await fetch("data/v2-plant.json").then((r) => r.json());
+mountV2(document.getElementById("v2graph"), document.getElementById("v2detail"), v2plant);
+
 const bar = document.getElementById("benchBar");
 bar.innerHTML = `
   <span class="bench-name">Bench apparatus</span>
+  <label>Plant <select id="plantPick"><option value="v1">v1 assigned envelopes</option><option value="v2">v2 discovered envelopes</option></select></label>
   <button class="btn" id="play" type="button">Replay</button>
   <button class="btn" id="reset" type="button">Reset</button>
   <span class="day-read" id="dayRead"></span>
@@ -64,6 +69,22 @@ document.getElementById("scrub").addEventListener("input", (event) => {
   clock.pause();
   clock.setDay(Number(event.target.value));
 });
+const v1views = document.getElementById("v1views");
+const v2views = document.getElementById("v2views");
+const plantPick = document.getElementById("plantPick");
+function applyPlant() {
+  const v2 = plantPick.value === "v2";
+  v1views.hidden = v2;
+  v2views.hidden = !v2;
+  document.getElementById("runNote").hidden = v2;
+  if (v2) clock.pause();
+}
+plantPick.addEventListener("change", applyPlant);
+if (params.get("plant") === "v2") {
+  plantPick.value = "v2";
+  applyPlant();
+}
+
 faultSelect.addEventListener("change", () => {
   fault = scenario.faults.find((item) => item.id === faultSelect.value);
   physics.focusAsset(fault.targetAssetId);

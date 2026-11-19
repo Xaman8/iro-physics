@@ -3,25 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bench apparatus · IRO Physics</title>
+  <title>Apparatus · IRO Physics</title>
   <link rel="stylesheet" href="css/site.css">
 </head>
 <body class="app">
-  <header class="top">
-    <a class="brand" href="index.html">IRO <span>Physics</span></a>
-    <nav>
-      <a href="index.html">Overview</a>
-      <a href="bench.html" aria-current="page">Bench apparatus</a>
-      <a href="method.html">Method</a>
-      <a href="results.html">Results</a>
-      <a href="paper.html">Paper</a>
-    </nav>
-  </header>
+  <header class="top" data-page="bench.html"></header>
   <div class="bench-bar" id="benchBar"></div>
-  <main class="split">
+  <main class="split" id="v1views">
     <section class="pane" id="physics" aria-label="Classic physics view"></section>
     <section class="pane" id="envelope" aria-label="Envelope physics view"></section>
   </main>
+  <main class="v2-layout" id="v2views" hidden>
+    <section class="pane v2-graph" id="v2graph" aria-label="v2 envelope graph"></section>
+    <aside class="v2-detail" id="v2detail"></aside>
+  </main>
+  <script type="module" src="js/nav.js"></script>
   <script type="module" src="js/bench.js"></script>
 </body>
 </html>

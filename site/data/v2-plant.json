@@ -1,0 +1,1267 @@
+{
+  "schema": "iro.bench.plant-graph/1",
+  "id": "toy-v2",
+  "title": "IRO toy plant v2",
+  "discoveredBy": "PF-louvain",
+  "replay": false,
+  "note": "No v2 time series are in this site. The graph is the discovered plant, not a replay.",
+  "counts": {
+    "assets": 32,
+    "ports": 71,
+    "bonds": 31,
+    "couplings": 50,
+    "boundaryCouplings": 18,
+    "boundaryPorts": 29,
+    "envelopes": 5
+  },
+  "assets": [
+    {
+      "id": "XF1",
+      "name": "Unit transformer 2 MVA",
+      "kind": "transformer",
+      "x_m": 0,
+      "y_m": 0,
+      "envelopeId": "E0"
+    },
+    {
+      "id": "SWG1",
+      "name": "LV switchgear",
+      "kind": "switchgear",
+      "x_m": 10,
+      "y_m": 0,
+      "envelopeId": "E0"
+    },
+    {
+      "id": "VFD1",
+      "name": "Drive, CW pump A",
+      "kind": "drive",
+      "x_m": 15,
+      "y_m": 5,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "VFD2",
+      "name": "Drive, compressor",
+      "kind": "drive",
+      "x_m": 15,
+      "y_m": -5,
+      "envelopeId": "E0"
+    },
+    {
+      "id": "MCC1",
+      "name": "MCC, pump house",
+      "kind": "switchgear",
+      "x_m": 60,
+      "y_m": 25,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "MCC2",
+      "name": "MCC, process area",
+      "kind": "switchgear",
+      "x_m": 148,
+      "y_m": 30,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "M1",
+      "name": "Motor, CW pump A (22 kW)",
+      "kind": "motor",
+      "x_m": 60,
+      "y_m": 22,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "P1",
+      "name": "CW pump A",
+      "kind": "pump",
+      "x_m": 62,
+      "y_m": 22,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "M2",
+      "name": "Motor, CW pump B (22 kW)",
+      "kind": "motor",
+      "x_m": 60,
+      "y_m": 18,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "P2",
+      "name": "CW pump B",
+      "kind": "pump",
+      "x_m": 62,
+      "y_m": 18,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "HDR1",
+      "name": "CW supply header",
+      "kind": "piping",
+      "x_m": 70,
+      "y_m": 20,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "CV1",
+      "name": "CW control valve, process cooler",
+      "kind": "valve",
+      "x_m": 120,
+      "y_m": 52,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "CV2",
+      "name": "CW control valve, lube-oil cooler",
+      "kind": "valve",
+      "x_m": 140,
+      "y_m": 4,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "HDR2",
+      "name": "CW return header",
+      "kind": "piping",
+      "x_m": 105,
+      "y_m": 40,
+      "envelopeId": "E3"
+    },
+    {
+      "id": "CT1",
+      "name": "Cooling tower cell",
+      "kind": "heat transfer",
+      "x_m": 100,
+      "y_m": 45,
+      "envelopeId": "E3"
+    },
+    {
+      "id": "M3",
+      "name": "Motor, tower fan (37 kW)",
+      "kind": "motor",
+      "x_m": 100,
+      "y_m": 47,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "FAN1",
+      "name": "Tower fan",
+      "kind": "fan",
+      "x_m": 100,
+      "y_m": 49,
+      "envelopeId": "E1"
+    },
+    {
+      "id": "HX1",
+      "name": "Process cooler",
+      "kind": "heat transfer",
+      "x_m": 125,
+      "y_m": 55,
+      "envelopeId": "E3"
+    },
+    {
+      "id": "P3",
+      "name": "Process circulation pump",
+      "kind": "pump",
+      "x_m": 140,
+      "y_m": 58,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "M5",
+      "name": "Motor, process pump (11 kW)",
+      "kind": "motor",
+      "x_m": 138,
+      "y_m": 58,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "R1",
+      "name": "Reactor (20 m3)",
+      "kind": "vessel",
+      "x_m": 150,
+      "y_m": 60,
+      "envelopeId": "E3"
+    },
+    {
+      "id": "M4",
+      "name": "Motor, agitator (30 kW)",
+      "kind": "motor",
+      "x_m": 150,
+      "y_m": 67,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "GB1",
+      "name": "Agitator gearbox",
+      "kind": "gearbox",
+      "x_m": 150,
+      "y_m": 66,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "AG1",
+      "name": "Agitator (shaft and impeller)",
+      "kind": "agitator",
+      "x_m": 150,
+      "y_m": 63,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "BRG1",
+      "name": "Agitator bearing",
+      "kind": "bearing",
+      "x_m": 150,
+      "y_m": 64,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "M6",
+      "name": "Motor, compressor (1.25 MW)",
+      "kind": "motor",
+      "x_m": 145,
+      "y_m": 0,
+      "envelopeId": "E4"
+    },
+    {
+      "id": "C1",
+      "name": "Centrifugal compressor",
+      "kind": "compressor",
+      "x_m": 150,
+      "y_m": 0,
+      "envelopeId": "E4"
+    },
+    {
+      "id": "BRG2",
+      "name": "Compressor journal bearing",
+      "kind": "bearing",
+      "x_m": 151,
+      "y_m": 0,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "LOP1",
+      "name": "Lube-oil pump (integral motor)",
+      "kind": "pump",
+      "x_m": 150,
+      "y_m": 4,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "HX2",
+      "name": "Lube-oil cooler",
+      "kind": "heat transfer",
+      "x_m": 145,
+      "y_m": 3,
+      "envelopeId": "E2"
+    },
+    {
+      "id": "IC1",
+      "name": "Compressor aftercooler",
+      "kind": "heat transfer",
+      "x_m": 155,
+      "y_m": 2,
+      "envelopeId": "E4"
+    },
+    {
+      "id": "KO1",
+      "name": "Gas receiver / knock-out drum",
+      "kind": "vessel",
+      "x_m": 160,
+      "y_m": 0,
+      "envelopeId": "E4"
+    }
+  ],
+  "couplings": [
+    {
+      "id": "C1.mechanical->BRG2.mechanical",
+      "sourcePortId": "C1.mechanical",
+      "targetPortId": "BRG2.mechanical",
+      "sourceAssetId": "C1",
+      "targetAssetId": "BRG2",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E2",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (journal)",
+      "length_m": 0.5,
+      "boundary": true
+    },
+    {
+      "id": "M6.mechanical->C1.mechanical",
+      "sourcePortId": "M6.mechanical",
+      "targetPortId": "C1.mechanical",
+      "sourceAssetId": "M6",
+      "targetAssetId": "C1",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E4",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (disc coupling)",
+      "length_m": 1.0,
+      "boundary": false
+    },
+    {
+      "id": "VFD2.electrical->M6.electrical",
+      "sourcePortId": "VFD2.electrical",
+      "targetPortId": "M6.electrical",
+      "sourceAssetId": "VFD2",
+      "targetAssetId": "M6",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E4",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 150 m)",
+      "length_m": 150,
+      "boundary": true
+    },
+    {
+      "id": "C1.fluid->IC1.fluid_gas",
+      "sourcePortId": "C1.fluid",
+      "targetPortId": "IC1.fluid_gas",
+      "sourceAssetId": "C1",
+      "targetAssetId": "IC1",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E4",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (gas discharge pipe 6 m)",
+      "length_m": 6,
+      "boundary": false
+    },
+    {
+      "id": "IC1.fluid_gas->KO1.fluid",
+      "sourcePortId": "IC1.fluid_gas",
+      "targetPortId": "KO1.fluid",
+      "sourceAssetId": "IC1",
+      "targetAssetId": "KO1",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E4",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (gas pipe 8 m)",
+      "length_m": 8,
+      "boundary": false
+    },
+    {
+      "id": "C1.thermal->IC1.thermal",
+      "sourcePortId": "C1.thermal",
+      "targetPortId": "IC1.thermal",
+      "sourceAssetId": "C1",
+      "targetAssetId": "IC1",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E4",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by gas)",
+      "length_m": 6,
+      "boundary": false
+    },
+    {
+      "id": "IC1.thermal->CT1.thermal",
+      "sourcePortId": "IC1.thermal",
+      "targetPortId": "CT1.thermal",
+      "sourceAssetId": "IC1",
+      "targetAssetId": "CT1",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E3",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by CW return)",
+      "length_m": 110,
+      "boundary": true
+    },
+    {
+      "id": "LOP1.fluid->HX2.fluid_oil",
+      "sourcePortId": "LOP1.fluid",
+      "targetPortId": "HX2.fluid_oil",
+      "sourceAssetId": "LOP1",
+      "targetAssetId": "HX2",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (oil pipe 4 m)",
+      "length_m": 4,
+      "boundary": false
+    },
+    {
+      "id": "HX2.fluid_oil->BRG2.fluid",
+      "sourcePortId": "HX2.fluid_oil",
+      "targetPortId": "BRG2.fluid",
+      "sourceAssetId": "HX2",
+      "targetAssetId": "BRG2",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (oil pipe 3 m)",
+      "length_m": 3,
+      "boundary": false
+    },
+    {
+      "id": "BRG2.thermal->HX2.thermal",
+      "sourcePortId": "BRG2.thermal",
+      "targetPortId": "HX2.thermal",
+      "sourceAssetId": "BRG2",
+      "targetAssetId": "HX2",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by oil return)",
+      "length_m": 4,
+      "boundary": false
+    },
+    {
+      "id": "HX2.thermal->CT1.thermal",
+      "sourcePortId": "HX2.thermal",
+      "targetPortId": "CT1.thermal",
+      "sourceAssetId": "HX2",
+      "targetAssetId": "CT1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E3",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by CW return)",
+      "length_m": 110,
+      "boundary": true
+    },
+    {
+      "id": "AG1.fluid->R1.fluid",
+      "sourcePortId": "AG1.fluid",
+      "targetPortId": "R1.fluid",
+      "sourceAssetId": "AG1",
+      "targetAssetId": "R1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (impeller discharge into vessel liquid)",
+      "length_m": 0.5,
+      "boundary": true
+    },
+    {
+      "id": "AG1.mechanical->BRG1.mechanical",
+      "sourcePortId": "AG1.mechanical",
+      "targetPortId": "BRG1.mechanical",
+      "sourceAssetId": "AG1",
+      "targetAssetId": "BRG1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (journal)",
+      "length_m": 0.5,
+      "boundary": false
+    },
+    {
+      "id": "GB1.mechanical_out->AG1.mechanical",
+      "sourcePortId": "GB1.mechanical_out",
+      "targetPortId": "AG1.mechanical",
+      "sourceAssetId": "GB1",
+      "targetAssetId": "AG1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (agitator shaft 4 m)",
+      "length_m": 4,
+      "boundary": false
+    },
+    {
+      "id": "M4.mechanical->GB1.mechanical_in",
+      "sourcePortId": "M4.mechanical",
+      "targetPortId": "GB1.mechanical_in",
+      "sourceAssetId": "M4",
+      "targetAssetId": "GB1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (flexible coupling)",
+      "length_m": 0.5,
+      "boundary": false
+    },
+    {
+      "id": "MCC2.electrical->M4.electrical",
+      "sourcePortId": "MCC2.electrical",
+      "targetPortId": "M4.electrical",
+      "sourceAssetId": "MCC2",
+      "targetAssetId": "M4",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 30 m)",
+      "length_m": 30,
+      "boundary": false
+    },
+    {
+      "id": "P3.fluid->HX1.fluid_proc",
+      "sourcePortId": "P3.fluid",
+      "targetPortId": "HX1.fluid_proc",
+      "sourceAssetId": "P3",
+      "targetAssetId": "HX1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (process pipe 18 m)",
+      "length_m": 18,
+      "boundary": true
+    },
+    {
+      "id": "HX1.fluid_proc->R1.fluid",
+      "sourcePortId": "HX1.fluid_proc",
+      "targetPortId": "R1.fluid",
+      "sourceAssetId": "HX1",
+      "targetAssetId": "R1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (process return pipe 30 m)",
+      "length_m": 30,
+      "boundary": false
+    },
+    {
+      "id": "M5.mechanical->P3.mechanical",
+      "sourcePortId": "M5.mechanical",
+      "targetPortId": "P3.mechanical",
+      "sourceAssetId": "M5",
+      "targetAssetId": "P3",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (flexible coupling)",
+      "length_m": 0.5,
+      "boundary": false
+    },
+    {
+      "id": "MCC2.electrical->M5.electrical",
+      "sourcePortId": "MCC2.electrical",
+      "targetPortId": "M5.electrical",
+      "sourceAssetId": "MCC2",
+      "targetAssetId": "M5",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 25 m)",
+      "length_m": 25,
+      "boundary": false
+    },
+    {
+      "id": "R1.thermal->HX1.thermal",
+      "sourcePortId": "R1.thermal",
+      "targetPortId": "HX1.thermal",
+      "sourceAssetId": "R1",
+      "targetAssetId": "HX1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E3",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by process loop)",
+      "length_m": 48,
+      "boundary": false
+    },
+    {
+      "id": "HX1.thermal->CT1.thermal",
+      "sourcePortId": "HX1.thermal",
+      "targetPortId": "CT1.thermal",
+      "sourceAssetId": "HX1",
+      "targetAssetId": "CT1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E3",
+      "domain": "thermal",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "convection (advection by CW return)",
+      "length_m": 60,
+      "boundary": false
+    },
+    {
+      "id": "HDR1.fluid->CV1.fluid_in",
+      "sourcePortId": "HDR1.fluid",
+      "targetPortId": "CV1.fluid_in",
+      "sourceAssetId": "HDR1",
+      "targetAssetId": "CV1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW pipe 90 m DN200)",
+      "length_m": 90,
+      "boundary": false
+    },
+    {
+      "id": "CV1.fluid_out->HX1.fluid",
+      "sourcePortId": "CV1.fluid_out",
+      "targetPortId": "HX1.fluid",
+      "sourceAssetId": "CV1",
+      "targetAssetId": "HX1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW spool 5 m)",
+      "length_m": 5,
+      "boundary": true
+    },
+    {
+      "id": "HX1.fluid->HDR2.fluid",
+      "sourcePortId": "HX1.fluid",
+      "targetPortId": "HDR2.fluid",
+      "sourceAssetId": "HX1",
+      "targetAssetId": "HDR2",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (tubes + CW return 40 m DN200)",
+      "length_m": 40,
+      "boundary": false
+    },
+    {
+      "id": "HDR1.fluid->IC1.fluid",
+      "sourcePortId": "HDR1.fluid",
+      "targetPortId": "IC1.fluid",
+      "sourceAssetId": "HDR1",
+      "targetAssetId": "IC1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E4",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW pipe 100 m DN150)",
+      "length_m": 100,
+      "boundary": true
+    },
+    {
+      "id": "IC1.fluid->HDR2.fluid",
+      "sourcePortId": "IC1.fluid",
+      "targetPortId": "HDR2.fluid",
+      "sourceAssetId": "IC1",
+      "targetAssetId": "HDR2",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (tubes + CW return 110 m DN150)",
+      "length_m": 110,
+      "boundary": true
+    },
+    {
+      "id": "HDR1.fluid->CV2.fluid_in",
+      "sourcePortId": "HDR1.fluid",
+      "targetPortId": "CV2.fluid_in",
+      "sourceAssetId": "HDR1",
+      "targetAssetId": "CV2",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW pipe 95 m DN50)",
+      "length_m": 95,
+      "boundary": false
+    },
+    {
+      "id": "CV2.fluid_out->HX2.fluid",
+      "sourcePortId": "CV2.fluid_out",
+      "targetPortId": "HX2.fluid",
+      "sourceAssetId": "CV2",
+      "targetAssetId": "HX2",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E2",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW spool 3 m)",
+      "length_m": 3,
+      "boundary": true
+    },
+    {
+      "id": "HX2.fluid->HDR2.fluid",
+      "sourcePortId": "HX2.fluid",
+      "targetPortId": "HDR2.fluid",
+      "sourceAssetId": "HX2",
+      "targetAssetId": "HDR2",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (tubes + CW return 110 m DN50)",
+      "length_m": 110,
+      "boundary": true
+    },
+    {
+      "id": "HDR2.fluid->CT1.fluid",
+      "sourcePortId": "HDR2.fluid",
+      "targetPortId": "CT1.fluid",
+      "sourceAssetId": "HDR2",
+      "targetAssetId": "CT1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (CW riser 15 m DN250)",
+      "length_m": 15,
+      "boundary": false
+    },
+    {
+      "id": "P1.fluid->HDR1.fluid",
+      "sourcePortId": "P1.fluid",
+      "targetPortId": "HDR1.fluid",
+      "sourceAssetId": "P1",
+      "targetAssetId": "HDR1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (discharge pipe 10 m DN150)",
+      "length_m": 10,
+      "boundary": false
+    },
+    {
+      "id": "M1.mechanical->P1.mechanical",
+      "sourcePortId": "M1.mechanical",
+      "targetPortId": "P1.mechanical",
+      "sourceAssetId": "M1",
+      "targetAssetId": "P1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (flexible coupling)",
+      "length_m": 0.5,
+      "boundary": false
+    },
+    {
+      "id": "VFD1.electrical->M1.electrical",
+      "sourcePortId": "VFD1.electrical",
+      "targetPortId": "M1.electrical",
+      "sourceAssetId": "VFD1",
+      "targetAssetId": "M1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 65 m)",
+      "length_m": 65,
+      "boundary": false
+    },
+    {
+      "id": "P2.fluid->HDR1.fluid",
+      "sourcePortId": "P2.fluid",
+      "targetPortId": "HDR1.fluid",
+      "sourceAssetId": "P2",
+      "targetAssetId": "HDR1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (discharge pipe 10 m DN150)",
+      "length_m": 10,
+      "boundary": false
+    },
+    {
+      "id": "M2.mechanical->P2.mechanical",
+      "sourcePortId": "M2.mechanical",
+      "targetPortId": "P2.mechanical",
+      "sourceAssetId": "M2",
+      "targetAssetId": "P2",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (flexible coupling)",
+      "length_m": 0.5,
+      "boundary": false
+    },
+    {
+      "id": "MCC1.electrical->M2.electrical",
+      "sourcePortId": "MCC1.electrical",
+      "targetPortId": "M2.electrical",
+      "sourceAssetId": "MCC1",
+      "targetAssetId": "M2",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 5 m)",
+      "length_m": 5,
+      "boundary": false
+    },
+    {
+      "id": "FAN1.fluid->CT1.fluid_air",
+      "sourcePortId": "FAN1.fluid",
+      "targetPortId": "CT1.fluid_air",
+      "sourceAssetId": "FAN1",
+      "targetAssetId": "CT1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E3",
+      "domain": "fluid",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "fluid (air, plenum)",
+      "length_m": 1,
+      "boundary": true
+    },
+    {
+      "id": "M3.mechanical->FAN1.mechanical",
+      "sourcePortId": "M3.mechanical",
+      "targetPortId": "FAN1.mechanical",
+      "sourceAssetId": "M3",
+      "targetAssetId": "FAN1",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "mechanical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "structure-borne (fan drive shaft 3 m)",
+      "length_m": 3,
+      "boundary": false
+    },
+    {
+      "id": "MCC1.electrical->M3.electrical",
+      "sourcePortId": "MCC1.electrical",
+      "targetPortId": "M3.electrical",
+      "sourceAssetId": "MCC1",
+      "targetAssetId": "M3",
+      "sourceEnvelopeId": "E1",
+      "targetEnvelopeId": "E1",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 55 m)",
+      "length_m": 55,
+      "boundary": false
+    },
+    {
+      "id": "MCC2.electrical->LOP1.electrical",
+      "sourcePortId": "MCC2.electrical",
+      "targetPortId": "LOP1.electrical",
+      "sourceAssetId": "MCC2",
+      "targetAssetId": "LOP1",
+      "sourceEnvelopeId": "E2",
+      "targetEnvelopeId": "E2",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 40 m)",
+      "length_m": 40,
+      "boundary": false
+    },
+    {
+      "id": "SWG1.electrical->MCC1.electrical",
+      "sourcePortId": "SWG1.electrical",
+      "targetPortId": "MCC1.electrical",
+      "sourceAssetId": "SWG1",
+      "targetAssetId": "MCC1",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E1",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (feeder 80 m)",
+      "length_m": 80,
+      "boundary": true
+    },
+    {
+      "id": "SWG1.electrical->MCC2.electrical",
+      "sourcePortId": "SWG1.electrical",
+      "targetPortId": "MCC2.electrical",
+      "sourceAssetId": "SWG1",
+      "targetAssetId": "MCC2",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E2",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (feeder 170 m)",
+      "length_m": 170,
+      "boundary": true
+    },
+    {
+      "id": "SWG1.electrical->VFD1.electrical",
+      "sourcePortId": "SWG1.electrical",
+      "targetPortId": "VFD1.electrical",
+      "sourceAssetId": "SWG1",
+      "targetAssetId": "VFD1",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E1",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 5 m)",
+      "length_m": 5,
+      "boundary": true
+    },
+    {
+      "id": "SWG1.electrical->VFD2.electrical",
+      "sourcePortId": "SWG1.electrical",
+      "targetPortId": "VFD2.electrical",
+      "sourceAssetId": "SWG1",
+      "targetAssetId": "VFD2",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E0",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (cable 5 m)",
+      "length_m": 5,
+      "boundary": false
+    },
+    {
+      "id": "XF1.electrical->SWG1.electrical",
+      "sourcePortId": "XF1.electrical",
+      "targetPortId": "SWG1.electrical",
+      "sourceAssetId": "XF1",
+      "targetAssetId": "SWG1",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E0",
+      "domain": "electrical",
+      "intent": "desired",
+      "topology": "direct port",
+      "mechanism": "electrical (busduct 10 m)",
+      "length_m": 10,
+      "boundary": false
+    },
+    {
+      "id": "R1.thermal->BRG1.thermal",
+      "sourcePortId": "R1.thermal",
+      "targetPortId": "BRG1.thermal",
+      "sourceAssetId": "R1",
+      "targetAssetId": "BRG1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E2",
+      "domain": "thermal",
+      "intent": "parasitic",
+      "topology": "structure-mediated",
+      "mechanism": "conduction (reactor top head and bearing housing)",
+      "length_m": 2,
+      "boundary": true
+    },
+    {
+      "id": "R1.thermal->GB1.thermal",
+      "sourcePortId": "R1.thermal",
+      "targetPortId": "GB1.thermal",
+      "sourceAssetId": "R1",
+      "targetAssetId": "GB1",
+      "sourceEnvelopeId": "E3",
+      "targetEnvelopeId": "E2",
+      "domain": "thermal",
+      "intent": "parasitic",
+      "topology": "structure-mediated",
+      "mechanism": "conduction (gearbox mounting on reactor head)",
+      "length_m": 3,
+      "boundary": true
+    },
+    {
+      "id": "VFD2.thermal->VFD1.thermal",
+      "sourcePortId": "VFD2.thermal",
+      "targetPortId": "VFD1.thermal",
+      "sourceAssetId": "VFD2",
+      "targetAssetId": "VFD1",
+      "sourceEnvelopeId": "E0",
+      "targetEnvelopeId": "E1",
+      "domain": "thermal",
+      "intent": "parasitic",
+      "topology": "medium-only",
+      "mechanism": "convection (shared drive-room air)",
+      "length_m": 10,
+      "boundary": true
+    },
+    {
+      "id": "C1.thermal->M6.thermal",
+      "sourcePortId": "C1.thermal",
+      "targetPortId": "M6.thermal",
+      "sourceAssetId": "C1",
+      "targetAssetId": "M6",
+      "sourceEnvelopeId": "E4",
+      "targetEnvelopeId": "E4",
+      "domain": "thermal",
+      "intent": "parasitic",
+      "topology": "medium-only",
+      "mechanism": "convection (compressor-house air)",
+      "length_m": 5,
+      "boundary": false
+    }
+  ],
+  "envelopes": [
+    {
+      "id": "E0",
+      "name": "Supply",
+      "assetIds": [
+        "XF1",
+        "SWG1",
+        "VFD2"
+      ]
+    },
+    {
+      "id": "E1",
+      "name": "Pump trains",
+      "assetIds": [
+        "VFD1",
+        "MCC1",
+        "M1",
+        "P1",
+        "M2",
+        "P2",
+        "HDR1",
+        "CV1",
+        "CV2",
+        "M3",
+        "FAN1"
+      ]
+    },
+    {
+      "id": "E2",
+      "name": "Drives and oil",
+      "assetIds": [
+        "MCC2",
+        "P3",
+        "M5",
+        "M4",
+        "GB1",
+        "AG1",
+        "BRG1",
+        "BRG2",
+        "LOP1",
+        "HX2"
+      ]
+    },
+    {
+      "id": "E3",
+      "name": "Heat rejection",
+      "assetIds": [
+        "HDR2",
+        "CT1",
+        "HX1",
+        "R1"
+      ]
+    },
+    {
+      "id": "E4",
+      "name": "Gas train",
+      "assetIds": [
+        "M6",
+        "C1",
+        "IC1",
+        "KO1"
+      ]
+    }
+  ],
+  "boundaryPorts": [
+    {
+      "envelopeId": "E4",
+      "assetId": "C1",
+      "portId": "C1.mechanical",
+      "couplingId": "C1.mechanical->BRG2.mechanical"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "BRG2",
+      "portId": "BRG2.mechanical",
+      "couplingId": "C1.mechanical->BRG2.mechanical"
+    },
+    {
+      "envelopeId": "E0",
+      "assetId": "VFD2",
+      "portId": "VFD2.electrical",
+      "couplingId": "VFD2.electrical->M6.electrical"
+    },
+    {
+      "envelopeId": "E4",
+      "assetId": "M6",
+      "portId": "M6.electrical",
+      "couplingId": "VFD2.electrical->M6.electrical"
+    },
+    {
+      "envelopeId": "E4",
+      "assetId": "IC1",
+      "portId": "IC1.thermal",
+      "couplingId": "IC1.thermal->CT1.thermal"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "CT1",
+      "portId": "CT1.thermal",
+      "couplingId": "IC1.thermal->CT1.thermal"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "HX2",
+      "portId": "HX2.thermal",
+      "couplingId": "HX2.thermal->CT1.thermal"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "AG1",
+      "portId": "AG1.fluid",
+      "couplingId": "AG1.fluid->R1.fluid"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "R1",
+      "portId": "R1.fluid",
+      "couplingId": "AG1.fluid->R1.fluid"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "P3",
+      "portId": "P3.fluid",
+      "couplingId": "P3.fluid->HX1.fluid_proc"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "HX1",
+      "portId": "HX1.fluid_proc",
+      "couplingId": "P3.fluid->HX1.fluid_proc"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "CV1",
+      "portId": "CV1.fluid_out",
+      "couplingId": "CV1.fluid_out->HX1.fluid"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "HX1",
+      "portId": "HX1.fluid",
+      "couplingId": "CV1.fluid_out->HX1.fluid"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "HDR1",
+      "portId": "HDR1.fluid",
+      "couplingId": "HDR1.fluid->IC1.fluid"
+    },
+    {
+      "envelopeId": "E4",
+      "assetId": "IC1",
+      "portId": "IC1.fluid",
+      "couplingId": "HDR1.fluid->IC1.fluid"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "HDR2",
+      "portId": "HDR2.fluid",
+      "couplingId": "IC1.fluid->HDR2.fluid"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "CV2",
+      "portId": "CV2.fluid_out",
+      "couplingId": "CV2.fluid_out->HX2.fluid"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "HX2",
+      "portId": "HX2.fluid",
+      "couplingId": "CV2.fluid_out->HX2.fluid"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "FAN1",
+      "portId": "FAN1.fluid",
+      "couplingId": "FAN1.fluid->CT1.fluid_air"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "CT1",
+      "portId": "CT1.fluid_air",
+      "couplingId": "FAN1.fluid->CT1.fluid_air"
+    },
+    {
+      "envelopeId": "E0",
+      "assetId": "SWG1",
+      "portId": "SWG1.electrical",
+      "couplingId": "SWG1.electrical->MCC1.electrical"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "MCC1",
+      "portId": "MCC1.electrical",
+      "couplingId": "SWG1.electrical->MCC1.electrical"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "MCC2",
+      "portId": "MCC2.electrical",
+      "couplingId": "SWG1.electrical->MCC2.electrical"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "VFD1",
+      "portId": "VFD1.electrical",
+      "couplingId": "SWG1.electrical->VFD1.electrical"
+    },
+    {
+      "envelopeId": "E3",
+      "assetId": "R1",
+      "portId": "R1.thermal",
+      "couplingId": "R1.thermal->BRG1.thermal"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "BRG1",
+      "portId": "BRG1.thermal",
+      "couplingId": "R1.thermal->BRG1.thermal"
+    },
+    {
+      "envelopeId": "E2",
+      "assetId": "GB1",
+      "portId": "GB1.thermal",
+      "couplingId": "R1.thermal->GB1.thermal"
+    },
+    {
+      "envelopeId": "E0",
+      "assetId": "VFD2",
+      "portId": "VFD2.thermal",
+      "couplingId": "VFD2.thermal->VFD1.thermal"
+    },
+    {
+      "envelopeId": "E1",
+      "assetId": "VFD1",
+      "portId": "VFD1.thermal",
+      "couplingId": "VFD2.thermal->VFD1.thermal"
+    }
+  ]
+}
