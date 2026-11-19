@@ -41,7 +41,7 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
             <button type="button" class="btn" id="clearFocus">Instruments</button>
           </div>
           <label data-instrument-label>Instrument <select id="envInstrument"></select></label>
-          <p>0–3 from the daily mean. Click a node for its calculus.</p>
+          <p>0–3 from the daily mean. Click a node for its calculus. These charts are display only and are never used to name a cause.</p>
         </div>
         <div class="deriv-grid" id="envDeriv"></div>
         <div class="warn-grid" id="envWarn"></div>

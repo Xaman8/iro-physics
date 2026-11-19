@@ -41,6 +41,9 @@ extra.innerHTML = `
     <li>Alarms in runs that do not fail, and alarms before onset.</li>
     <li>For distance, Spearman rank correlation of each distance with log effect, pooled and within source.</li>
   </ul>
+  <h2>Three-way detection comparison <span class="badge draft">proposed</span></h2>
+  <p>The approach has two tracks. Track one is the physics model: the plant is assembled as one sparse linear system and energy is propagated through it, including injected fault energy, to predict which asset is damaged, how fast, and from which source. Track two runs the calculus (value, rate, acceleration, jerk; derivative orders 0-3) on the instrument readings to see whether the predicted fault appears there and how early.</p>
+  <p>On the same fault scenarios and no-fault runs we compare three detectors: (a) the model’s prediction, (b) detection from instrument calculus alone, and (c) the model’s band matching (fitting the source port through the transfer maps to effort-sensor readings in the fault bands). Measures: correct root cause, lead time before the limit, and false alarms in no-fault runs. Status: not yet built; derivatives are currently display only.</p>
   <h2>Caveats, from the v2 README</h2>
   <ul>
     <li>The plant is linear and lumped. There is no transport delay, and pipes stay lumped at the frequencies used.</li>

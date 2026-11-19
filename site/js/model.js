@@ -2,6 +2,7 @@ import { renderMarkdown } from "./markdown.js";
 
 const docs = [
   ["vocabulary", "Vocabulary", "content/vocabulary.md"],
+  ["described", "Described model", "content/described-model.md"],
   ["formal", "Formal model", "content/formal-model.md"],
 ];
 const tabs = document.getElementById("tabs");
@@ -25,9 +26,30 @@ async function show(id) {
     cache.set(id, markProposed(renderMarkdown(md)));
   }
   view.innerHTML = cache.get(id);
+  typeset(view);
 }
+
+function typeset(el) {
+  if (typeof window.renderMathInElement !== "function") return;
+  window.renderMathInElement(el, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "\\[", right: "\\]", display: true },
+      { left: "\\(", right: "\\)", display: false },
+      { left: "$", right: "$", display: false },
+    ],
+    throwOnError: false,
+  });
+}
+
+function tabFromHash() {
+  const id = location.hash.replace("#", "");
+  return docs.some((row) => row[0] === id) ? id : "vocabulary";
+}
+
 tabs.addEventListener("click", (event) => {
   const button = event.target.closest("button");
-  if (button) show(button.dataset.doc);
+  if (button) location.hash = button.dataset.doc;
 });
-show("vocabulary");
+window.addEventListener("hashchange", () => show(tabFromHash()));
+show(tabFromHash());

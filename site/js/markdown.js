@@ -5,11 +5,17 @@ function esc(s) {
     .replace(/>/g, "&gt;");
 }
 
+// Math is passed through untouched for KaTeX auto-render: $$...$$, $...$, \(...\), \[...\].
+const MATH = /(\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\])/g;
+
 function inline(s) {
-  let t = esc(s);
+  const math = [];
+  let t = String(s).replace(MATH, (m) => { math.push(m); return `\u0000${math.length - 1}\u0000`; });
+  t = esc(t);
   t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
   t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>');
+  t = t.replace(/\u0000(\d+)\u0000/g, (_, k) => esc(math[Number(k)]));
   return t;
 }
 
@@ -39,6 +45,14 @@ export function renderMarkdown(md) {
       continue;
     }
     if (!line.trim()) { i += 1; continue; }
+    if (line.trim().startsWith("$$")) {
+      const buf = [line];
+      let closed = line.trim().length > 2 && line.trim().endsWith("$$");
+      i += 1;
+      while (!closed && i < lines.length) { buf.push(lines[i]); closed = lines[i].trim().endsWith("$$"); i += 1; }
+      out.push(`<div class="math-display">${esc(buf.join("\n"))}</div>`);
+      continue;
+    }
     if (/^---+$/.test(line.trim())) { out.push("<hr>"); i += 1; continue; }
     const heading = /^(#{1,3})\s+(.*)$/.exec(line);
     if (heading) {
@@ -74,6 +88,7 @@ export function renderMarkdown(md) {
     while (
       i < lines.length && lines[i].trim() &&
       !lines[i].startsWith("#") && !lines[i].startsWith(">") && !lines[i].startsWith("```") &&
+      !lines[i].trim().startsWith("$$") &&
       !/^\s*[-*]\s+/.test(lines[i]) && !(lines[i].includes("|") && i + 1 < lines.length && isRule(lines[i + 1]))
     ) buf.push(lines[i++]);
     out.push(`<p>${inline(buf.join(" "))}</p>`);
