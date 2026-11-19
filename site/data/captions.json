@@ -18,7 +18,7 @@
     {
       "file": "assets/explainer/explainer_sparse.svg",
       "title": "Most of that is zeros, and the rest is linear",
-      "caption": "A real plant has only a few couplings per asset, so the math is a sparse linear system that a CPU or GPU solves quickly; our benchmark ran about 20 ms per update at 10,000 assets on one core. The cost rises sharply when the plant is tightly meshed, to 11.6 s per update at 100,000 assets, or when every vibration cycle is simulated in time."
+      "caption": "A real plant has only a few couplings per asset, so the math is a sparse linear system that one CPU core solves quickly; our benchmark ran about 20 ms per update at 10,000 assets on one core. It ran on the CPU only. No GPU was tested. The cost rises sharply when the plant is tightly meshed, to 11.6 s per update at 100,000 assets, or when every vibration cycle is simulated in time."
     },
     {
       "file": "assets/explainer/explainer_2_envelopes.svg",

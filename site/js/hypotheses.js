@@ -12,6 +12,8 @@ const cell = (scenario, predictor, field) => {
 const topo = v2.modularityNull.topology;
 const pf = v2.modularityNull.PF;
 const kc = v2.pfLouvainKc;
+const ckc = v2.chosenKc;
+const cnull = v2.chosenModularityNull;
 const full = v1.headline.FULL;
 const reduced = v1.headline.REDUCED;
 const local = v1.headline.LOCAL;
@@ -36,13 +38,14 @@ const cards = [
     cls: "partly",
     prediction: "A partition built from coupling weights is stable when parameters move, and its modularity sits above a degree-preserving rewired null.",
     falsify: "The partition changes with the weight, or modularity is not above the null.",
-    test: "v2 Step 5. The downstream envelopes are the PF-louvain partition.",
+    test: `v2 Step 5. The downstream envelopes are the ${v2.chosenName} partition, ${v2.chosenK} envelopes, picked by the pre-registered rule. Before the 2026-11-19 red-team fixes the rule picked PF-louvain.`,
     evidence: [
-      `PF-louvain versus the engineer’s functional grouping, adjusted Rand index ${text(v2.ariPfLouvainEngineer)} (discovery_ARI.csv).`,
-      `Stability under ±30% parameter perturbation, mean ARI ${text(v2.stability30.mean_ARI)}, minimum ${text(v2.stability30.min_ARI)}, n ${text(v2.stability30.n)} (discovery.json).`,
+      `${v2.chosenName} versus the engineer’s functional grouping, adjusted Rand index ${text(v2.ariChosenEngineer)}; PF-louvain versus the engineer, ${text(v2.ariPfLouvainEngineer)} (discovery_ARI.csv).`,
+      `Stability under ±30% parameter perturbation: ${v2.chosenName} mean ARI ${text(v2.chosenStability30.mean_ARI)}, minimum ${text(v2.chosenStability30.min_ARI)}; PF-louvain mean ${text(v2.stability30.mean_ARI)}, minimum ${text(v2.stability30.min_ARI)}; n ${text(v2.stability30.n)} (discovery.json).`,
       `Power-flow modularity Q ${text(pf.Q)}. Unweighted topology Q ${text(topo.Q_unweighted)}. Rewired null mean ${text(topo.rewired_null_mean)}, sd ${text(topo.rewired_null_sd)}, z ${text(topo.z)}, p ${text(topo.p_ge)}. Not above the null.`,
       `Weight-shuffle null for the power-flow weights: mean ${text(pf.null_mean)}, and the observed Q is below it (p ${text(pf.p_ge)}).`,
-      `Kedem–Caplan q inside PF-louvain envelopes, median ${text(kc.median_intra)}; between them, median ${text(kc.median_inter)}.`,
+      ...(cnull ? [`Weight-shuffle null for the ${cnull.name} weights: observed Q ${text(cnull.Q)}, null mean ${text(cnull.null_mean)}, p ${text(cnull.p_ge)}.`] : []),
+      `Kron two-port coupling ratio at DC inside ${v2.chosenName} envelopes, median ${text(ckc.median_intra)}; between them, median ${text(ckc.median_inter)}. Inside PF-louvain envelopes ${text(kc.median_intra)} and between ${text(kc.median_inter)}. The ratio is bounded by 1 after the red-team fix; it earlier reached 2.37.`,
     ],
   },
   {
@@ -117,10 +120,10 @@ const cards = [
     falsify: "At the plant sizes and meshing tested, the full sparse solve keeps up with the required update rate, or the envelope model is no faster than it, including after a change inside one envelope.",
     test: `<a href="design.html#xb">XB</a>, full baseline against envelopes on the same scenarios, for accuracy and update cost. X4 for meshing density, ordering and hardware. The required real-time update rate has not been set yet.`,
     evidence: [
-      "Scaling benchmark, one CPU core (SCALING.md). Full update at 10,016 assets: 19.8 ms with stored factorizations, 142 ms refactorized. At 100,000 assets: 274 ms and 1.55 s.",
+      "Scaling benchmark, one CPU core (SCALING.md). Full update at 10,016 assets: 19.8 ms with stored factorizations, 142 ms refactorized. At 100,000 assets: 274 ms and 1.55 s. These are from before the 2026-11-19 red-team fixes; a spot check afterwards at 10,016 assets gave 19.3 ms and 163 ms, and the full sweep has not been rerun.",
       "Meshed plant at 100,000 assets, refactorized update: 11.6 s full, 25.2 s envelope. A plant-year of 1,461 updates at 100,000 assets took 6.7 to 37.8 min on the grid plant and 4.7 h meshed.",
       "The envelope solve matched the full solve to within 5e-9 relative, but it was not faster per update at any size measured. So far the benchmark does not support the hypothesis.",
-      "Not measured yet: updates after a change inside one envelope, the Kron work spread over several cores, GPU, METIS ordering, and envelopes of envelopes. The v2 predictors work on 6-hour means, and every measured full update fits easily inside that interval, so the test needs a faster real-time rate or larger, more meshed plants than these.",
+      "Not measured yet: updates after a change inside one envelope, the Kron work spread over several cores, any GPU (none was tested), METIS ordering, and envelopes of envelopes. The v2 predictors work on 6-hour means, and every measured full update fits easily inside that interval, so the test needs a faster real-time rate or larger, more meshed plants than these.",
     ],
   },
 ];

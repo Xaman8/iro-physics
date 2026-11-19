@@ -85,14 +85,14 @@ parts.push(csvTable(v2.failureTable, [
   ["alarms_before_onset", "Alarms before onset"],
 ]));
 parts.push(`<p class="note">Cross-envelope true failures, discovered envelopes: ${crossLine(v2, "discovered")}. Engineer grouping: ${crossLine(v2, "engineer")}.</p>`);
-parts.push(`<h3>SAFE_FACTOR 1.5, 10 runs</h3>`);
+parts.push(`<h3>SAFE_FACTOR 1.5, 20 runs</h3>`);
 parts.push(`<p class="note">results/failure_table_sf1.5.csv</p>`);
 parts.push(csvTable(v2.failureTableSf15, [
   ["scenario", "Scenario"], ["predictor", "Predictor"], ["true_failures", "True failures"],
   ["warned", "Warned"], ["lead_median_d", "Lead median (d)"], ["root_cause_correct", "Root cause"],
   ["alarms_no_failure", "Alarms, no failure"],
 ]));
-parts.push(`<h3>SAFE_FACTOR 3.0, 10 runs</h3>`);
+parts.push(`<h3>SAFE_FACTOR 3.0, 20 runs</h3>`);
 parts.push(`<p class="note">results/failure_table_sf3.csv</p>`);
 parts.push(csvTable(v2.failureTableSf3, [
   ["scenario", "Scenario"], ["predictor", "Predictor"], ["true_failures", "True failures"],
@@ -110,7 +110,7 @@ parts.push(csvTable(v2.distanceRank, [
   ["rho_within_max", "within max"],
   ["n_sources", "sources"],
 ]));
-parts.push(`<figure class="plate"><img src="assets/figures/fig1_discovered_envelopes.png" alt="Discovered envelopes"><figcaption><h2>Discovered envelopes</h2><p>Coupling graph of the 32-asset plant, coloured by the PF-louvain partition. Thick lines are couplings inside an envelope. Dotted lines are parasitic paths.</p></figcaption></figure>`);
+parts.push(`<figure class="plate"><img src="assets/figures/fig1_discovered_envelopes.png" alt="Discovered envelopes"><figcaption><h2>Discovered envelopes</h2><p>Coupling graph of the 32-asset plant, coloured by the 7 KCw1-louvain envelopes that the selection rule picked after the 2026-11-19 red-team fixes. Thick lines are couplings inside an envelope. Dotted lines are parasitic paths.</p></figcaption></figure>`);
 parts.push(`<figure class="plate"><img src="assets/figures/fig2_root_cause_false_alarms.png" alt="Root cause and false alarms"><figcaption><h2>Root cause and alarms</h2><p>Share of warned runs with the correct root cause, and share of no-fault runs with an alarm, by predictor. The counts are in the table above.</p></figcaption></figure>`);
 
 root.innerHTML = parts.join("\n");
