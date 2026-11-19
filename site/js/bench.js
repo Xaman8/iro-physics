@@ -1,6 +1,6 @@
 import { Clock } from "./clock.js";
 import { mountPhysics } from "./physics-view.js";
-import { mountNest } from "./envelope-tree.js";
+import { mountBoard } from "./envelope-board.js";
 import { mountV2 } from "./v2-graph.js";
 import { text } from "./format.js";
 
@@ -40,9 +40,7 @@ faultSelect.value = fault.id;
 const physics = mountPhysics(document.getElementById("physics"), {
   plant, scenario, getFault: () => fault, clock,
 });
-mountNest(document.getElementById("envelope"), {
-  peer: { href: "explorer.html", label: "Envelope explorer" },
-});
+mountBoard(document.getElementById("envelope"));
 physics.focusAsset(params.get("asset") || fault.targetAssetId);
 physics.setFault();
 
