@@ -2,7 +2,7 @@
 
 **Made-up plant.** Every number here comes from `plant_v3.py`, `failure_test_v3.py` and `site_data.py` in this folder. Nothing describes a real site. Build the folder again with `python3 site_data.py` (about 3 s; it re-simulates the headline run).
 
-All numbers are rounded to 3 significant figures. Power is in MW (power base 1 MW). sigma is in per unit, MW / T0 with T0 = 1. Total size is 4.78 MB across the 8 JSON files.
+All numbers are rounded to 3 significant figures. Power is in MW (power base 1 MW). sigma is in kW/K: each loss is weighted by T_amb / T at its design temperature, with T_amb = 298.15 K, so T_amb × sigma is the exergy destroyed. Total size is 4.98 MB across the 8 JSON files. Before the 2026-11-19 red-team fixes sigma was in per unit (MW / T0, T0 = 1) and the smoothing was centred; the old files are kept in `../results/pre_redteam_site_data/`.
 
 ## Files
 
@@ -46,7 +46,7 @@ All numbers are rounded to 3 significant figures. Power is in MW (power base 1 M
 - `meta`:
   - `scenario` (X3), `scenario_label`, `seed` (3000), `fault_onset_day`, `first_failure` (`asset`, `day`), `fault_line` (`name`, `port`, `f_Hz`).
   - `predictor_alarms_this_run`: for each predictor (FULL, REDUCED_L1, REDUCED_L2, REDUCED_D1, LOCAL), the alarm day and the predicted failing asset, root-cause asset and its L1 and L2 envelope, remaining life at the alarm (days), and the channel. Taken from `results/failure_cases.json`.
-  - `day_axis`, `smoothing`, `quantities` (definitions), `orders`, `rounding`.
+  - `day_axis`, `smoothing`, `lag_hours` (how far each order lags the hourly signal: 24, 28.5, 33 and 37.5 h for orders 0–3), `quantities` (definitions), `orders`, `rounding`.
 - `day[]`: 400 values. `day[k] = k + 0.5`.
 - `nodes{id: {...}}`:
   - `sigma`: 4 arrays (orders 0–3), each with 400 values.
@@ -58,7 +58,7 @@ All numbers are rounded to 3 significant figures. Power is in MW (power base 1 M
 
 | Key | Meaning | Unit |
 |---|---|---|
-| `sigma` | Entropy generation inside the node: designed losses at its assets' ports, its bonds, and couplings with both ends inside it. DC plus the AC lines | pu (MW / T0, T0 = 1) |
+| `sigma` | Entropy generation inside the node: designed losses at its assets' ports, its bonds, and couplings with both ends inside it. DC plus the AC lines | kW/K |
 | `boundary_power` | Net power into the node through its boundary couplings (taken at the node-side port; thermal = heat flow), plus any plant boundary ports inside it. DC plus time-averaged AC | MW |
 | `fault_band_power` | The part of `boundary_power` in the headline fault band only (18.5 Hz, time-averaged AC) | MW |
 | `damage` | Largest Miner damage fraction over the node's assets (1 = failure) | – |
@@ -66,11 +66,11 @@ All numbers are rounded to 3 significant figures. Power is in MW (power base 1 M
 ### Orders and smoothing (Francis)
 
 - The simulation runs hourly for 400 days.
-- Order 0 = centred moving average over ±24 hourly samples.
-- Order n = finite difference (`np.gradient`) of order n−1, re-smoothed with a ±4-sample moving average.
+- Order 0 = trailing moving average of the last 49 hourly samples. It uses no later sample, so it lags the hourly signal by 24 h.
+- Order n = backward difference of order n−1, re-smoothed with a trailing 9-sample moving average. Each order adds 4.5 h of lag: 28.5 h for order 1, 33 h for order 2, 37.5 h for order 3.
 - Units per day^n: order 1 = rate (per day), 2 = acceleration (per day²), 3 = jerk (per day³).
 - **Downsampled:** after smoothing, one sample per day is kept (hour 12). Hourly series are not stored.
-- The first and last day of each series are affected by the window edges.
+- The first two days of each series are affected by the window start. Nothing at the end is, because no future sample is used.
 
 ## What the files do not hold
 
