@@ -41,9 +41,42 @@ extra.innerHTML = `
     <li>Alarms in runs that do not fail, and alarms before onset.</li>
     <li>For distance, Spearman rank correlation of each distance with log effect, pooled and within source.</li>
   </ul>
-  <h2 id="three-way">Three-way detection comparison <span class="badge draft">proposed</span></h2>
-  <p>The approach has two tracks. Track one is the physics model: the plant is assembled as one sparse linear system and energy is propagated through it, including injected fault energy, to predict which asset is damaged, how fast, and from which source. Track two runs the calculus (value, rate, acceleration, jerk; derivative orders 0-3) on the instrument readings to see whether the predicted fault appears there and how early.</p>
-  <p>On the same fault scenarios and no-fault runs we compare three detectors: (a) the model’s prediction, (b) detection from instrument calculus alone, and (c) the model’s band matching (fitting the source port through the transfer maps to effort-sensor readings in the fault bands). Measures: correct root cause, lead time before the limit, and false alarms in no-fault runs. Status: not yet built; derivatives are currently display only.</p>
+  <h2>Proposed experiments <span class="badge draft">proposed</span></h2>
+  <p>None of these experiments has been run, and no result is stated here. Where a row names an existing result, it only shows what the new experiment adds. The steps are the eight steps on the Overview.</p>
+  <div class="table-scroll"><table>
+    <thead><tr><th>ID</th><th>Step</th><th>Question</th><th>What is varied</th><th>What is measured</th><th>Builds on</th></tr></thead>
+    <tbody>
+      <tr><td>X1</td><td>1. Plant</td><td>Does the inferred coupling graph change with operating mode? (RQ13)</td><td>Operating mode: normal, startup, one pump tripped, valve closed</td><td>Changes in couplings and in coupling power sign; whether the discovered envelopes change (ARI)</td><td>v2 plant, one operating point only today</td></tr>
+      <tr><td>X2</td><td>2. Five-port asset</td><td>Does applying the five-port rule change any result? (RQ8, RQ10)</td><td>v2 as it stands (${c.ports} ports in use) against v2 rebuilt with five ports per asset, including a chemical domain (reaction heat, corrosion or fuel paths)</td><td>Solve identity at DC and the five line frequencies; boundary domains per envelope; how many empty ports remain</td><td>Five-port rule (Formal model Step 1, locked). Same-domain port pairs still to be decided</td></tr>
+      <tr><td>X3</td><td>3. All-pairs view</td><td>What does the all-pairs port map hold, and how much of it matters? (RQ6, RQ12)</td><td>Plant size, 32 to 10k assets</td><td>Share of entries of the port-to-port map Z(s) above set thresholds at each fault band; dense cost and memory</td><td>Scaling notes: dense figures measured to 3,008 assets</td></tr>
+      <tr><td>X4</td><td>4. Sparse linear system</td><td>Where does the sparse full solve stop being cheap? (RQ12, RQ16)</td><td>Meshing density; ordering (COLAMD against METIS nested dissection); GPU against CPU</td><td>Update time with stored and with fresh factorizations; fill; memory</td><td>Grid and meshed plants on one CPU core with COLAMD. METIS and GPU not measured</td></tr>
+      <tr><td>X5</td><td>5. Natural envelopes</td><td>Are the envelopes stable across plants and modes, and which weighting should decide? (RQ1, RQ13)</td><td>Plant (v2, five-port v2, a second plant layout); weighting (power flow, Kedem–Caplan per band); operating mode</td><td>ARI between methods, across perturbation and across modes; null-model scores</td><td>v2 discovery, one plant, one mode</td></tr>
+      <tr><td>X6</td><td>6. Envelope as asset</td><td>Does the reduction hold up away from the linear case, and does recursion work? (RQ2, RQ3, RQ4)</td><td>A nonlinear element inside an envelope; envelopes of envelopes</td><td>Exactness against the full solve; passivity; what is lost at each level</td><td>v2 reduction, exact and passive in the linear case</td></tr>
+      <tr><td>X7</td><td>7. Cross-envelope failure</td><td>Can failures that genuinely cross envelopes be predicted? (RQ0, RQ5, RQ9)</td><td>New scenarios built so the true first failure lies outside the source envelope: thermal, fluid and vibration paths, plus convergent excitation from two envelopes</td><td>Share of runs where the failure is cross-envelope; lead time; correct failing asset; correct root cause; false alarms</td><td>v2 test, where only F1 crossed (${v2.crossEnvelope["F1:_cross_envelope_discovered"].n_cross}/${v2.crossEnvelope["F1:_cross_envelope_discovered"].n} under discovered envelopes)</td></tr>
+      <tr><td>X8</td><td>8. Detect and trace back</td><td>See XB and XD below</td><td></td><td></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <h2 id="xb">XB. Full baseline against envelopes <span class="badge draft">proposed</span></h2>
+  <p>Purpose: decide what envelopes add once the full sparse solve is known to be fast. The benchmark measured speed only. This experiment measures accuracy and insight. All arms use the same truth runs, scenarios, seeds and alarm rule. (RQ16, lead hypothesis 2.)</p>
+  <ul>
+    <li>FULL-ALL. The full plant model with sensors at every port in use.</li>
+    <li>FULL-BOUNDARY. The full plant model, but sensors only at the envelope boundary ports. This separates the effect of the model from the effect of sensing.</li>
+    <li>ENV. The envelope model, with boundary sensors.</li>
+    <li>ENV+INT. The envelope model with a few added internal sensors per envelope, chosen to separate that envelope’s own candidate sources (the F3 case).</li>
+    <li>LOCAL. Per-asset trending, as in v2.</li>
+  </ul>
+  <p>Scenarios: the v2 set (F1 to F5, C0) plus the X7 cross-envelope scenarios. At least one parametric fault is modelled as a change in Y, not as an equivalent injection (RQ4).</p>
+  <p>Measures for each arm and scenario: root cause correct (asset, and envelope); failing asset correct; lead time (median and interquartile range); error in predicted time to failure; alarms in no-fault and non-failing runs, and alarms before onset; update time with stored and with fresh factorizations, and cost after a local change in one envelope; convergent-excitation cases detected, and cases where combined behaviour at an envelope boundary flags a risk that no single asset pair shows.</p>
+  <p>Each measure is reported with its run count, as in the v2 tables. A difference between arms counts only if it holds across seeds and across the safety-margin checks. Those decision rules still need agreement.</p>
+  <h2 id="three-way">XD. Three-way detection comparison <span class="badge draft">proposed</span></h2>
+  <p>The same fault and no-fault runs go to three detectors. Not yet built. The derivative charts are display only today. (RQ15.)</p>
+  <ul>
+    <li>(a) The model’s prediction: transfer-map fit, damage forecast and remaining life, as in v2.</li>
+    <li>(b) Instrument calculus alone: value, rate, acceleration and jerk (derivative orders 0 to 3) of the instrument readings, with a threshold rule fixed before the runs.</li>
+    <li>(c) The model’s band matching: fitting the fault bands at the sensors to name a source, without the damage forecast.</li>
+  </ul>
+  <p>Measures: correct root cause, lead time and false alarms, plus detection delay after onset. Detector (b) cannot name a remote source on its own, so its root-cause score is the asset that alarmed, the same way LOCAL is scored in v2.</p>
+  <p>Still open: the smoothing window for the derivatives, the sample rate (the v2 predictors work on 6-hour means), and whether (b) runs on every port or only on boundary ports.</p>
   <h2>Caveats, from the v2 README</h2>
   <ul>
     <li>The plant is linear and lumped. There is no transport delay, and pipes stay lumped at the frequencies used.</li>
@@ -56,4 +89,5 @@ extra.innerHTML = `
   </ul>
 `;
 root.appendChild(extra);
-if (location.hash === "#three-way") document.getElementById("three-way")?.scrollIntoView();
+const jump = document.getElementById(location.hash.slice(1));
+if (jump) jump.scrollIntoView();

@@ -1,10 +1,33 @@
 # Described model
 
-This page describes in prose what the IRO toy models compute and how they compute it, one method at a time. Unless a passage says v1, it describes toy model v2: a 32-asset lumped linear plant built with typical engineering parameters, not plant data. The code in `iro-toy-model/v2/` is the authority. Where the code and the Formal model tab disagree, this page says what the code does and records the gap in the last section. Formal-model steps that are not locked are marked [PROPOSED]. Every number below comes from `v2/results/` or from rerunning the v2 code on 2026-11-19.
+This page describes in prose what the IRO toy models compute and how they compute it, in the order of the eight steps below, one method at a time. Unless a passage says v1, it describes toy model v2: a 32-asset lumped linear plant built with typical engineering parameters, not plant data. The code in `iro-toy-model/v2/` is the authority. Where the code and the Formal model tab disagree, this page says what the code does and records the gap in the last section. Formal-model steps that are not locked are marked [PROPOSED]. "Step 1" to "Step 8" in headings are the eight steps of the approach. A step of the Formal model is always called "Step N of the Formal model" or "the Formal model's Step N". Every number below comes from `v2/results/`, from `v2/scaling/SCALING.md`, or from rerunning the v2 code on 2026-11-19. The few numbers that are our own arithmetic are labelled as such.
 
-## 1. How an asset is modelled
+## The approach in eight steps
 
-An asset is a set of ports plus the bonds that link them. A port is "an interface where energy crosses a boundary" (Arseneau and Arseneau, draft 2026.10.27). Each port has a domain and carries an effort and a flow, and their product is the power through the port. Ports are direction-neutral. Direction belongs to couplings (section 2).
+- **Step 1.** The plant is assets joined by couplings.
+- **Step 2.** Every asset is an energy transfer function with five ports: mechanical, fluid, thermal, electrical and chemical, some of them unused. Energy changes kind inside an asset and travels between assets along couplings.
+- **Step 3.** The simplest view is every asset against every other. With five ports each, that is $(5N)^2 = 25N^2$ possible port-to-port links, or 2.5 billion at 10,000 assets.
+- **Step 4.** Most of those links are zero and the rest are linear. A plant has a few couplings per asset, so it is a sparse linear system that a CPU or GPU solves quickly. In the benchmark one update took about 20 ms at 10,000 assets on one CPU core. Cost rises sharply for densely meshed plants and for simulation that resolves the time domain.
+- **Step 5.** Model it differently: find natural envelopes from coupling strength.
+- **Step 6.** Each envelope becomes one asset with boundary ports.
+- **Step 7.** A failure crosses envelopes.
+- **Step 8.** Detect it and trace it back. Instruments show the fault developing, and the model works backwards to name the source.
+
+Step 4 has a consequence for the rest. Because the full sparse solve is already fast, envelopes are not justified by speed on a single machine. In the benchmark, on one core, the envelope solve was exact but no faster than a good sparse solver of the whole plant. The case for envelopes rests on four other things: scaling to large or densely meshed plants, cheap updates when one part of the plant changes, recursion (envelopes of envelopes), and revealing behaviour that involves several assets at once, which is lead hypothesis (2). Apart from the measured speeds, none of these has been tested yet.
+
+## Step 1. The plant is assets joined by couplings
+
+The v2 plant has 32 assets joined by 50 couplings, with 31 bonds inside the assets and 71 ports in use. Its mean coupling degree is 3.1 couplings per asset, and the most connected asset has 6 (from `scaling/SCALING.md`). The plant boundary (grid, ambient, reaction heat, gas users) is made of ideal-source boundary ports, not assets (Step 3e of the Formal model).
+
+A coupling is a reified relation from a source port on one asset to a target port on another (paper). In v2 both ends are always in the same domain, and a test enforces this. The coupling carries its mechanism, length and topology. The topology is one of the paper's three: direct port, medium-only or structure-mediated. The nominal direction is source to target. The actual direction at any moment is the sign of the coupling power.
+
+In the code, a coupling is the same kind of element as a bond, a resistance $R$ with an optional inertance $L$. The only difference is that its two ends sit on different assets. v2 has 50 couplings and 31 bonds. Four of the couplings are parasitic heat paths: R1→BRG1 and R1→GB1 are structure-mediated, and VFD2→VFD1 and C1→M6 are medium-only. Parasitic couplings carry no budgeted flow. Their conductance is set to KAPPA × the target port's designed loss, with KAPPA = 0.05. That value is an assumption, and the discovery test also runs it at 0.01 and 0.2.
+
+The Formal model's Step 2b–2c writes coupling physics as an Onsager matrix $L$ and defines coupling strength as the Kedem–Caplan degree of coupling $q = L_{12}/\sqrt{L_{11}L_{22}}$ (Onsager 1931; Kedem and Caplan 1965). The code has no per-coupling Onsager matrix. Instead it computes $q$ from the admittance of the whole plant reduced onto the coupling's two ports (step 5). That substitution is marked [PROPOSED] in the Formal model's Step 5a.
+
+## Step 2. Every asset is an energy transfer function with five ports
+
+An asset is a set of ports plus the bonds that link them. A port is "an interface where energy crosses a boundary" (Arseneau and Arseneau, draft 2026.10.27). Each port has a domain and carries an effort and a flow, and their product is the power through the port. Ports are direction-neutral. Direction belongs to couplings (step 1).
 
 **Five ports per asset (LOCKED 2026-11-19, Brant).** Every asset has exactly five ports, one in each domain: mechanical, fluid, thermal, electrical and chemical. A port the asset does not use is kept as an empty port: it has zero power and nothing is connected to it. In v2, for example, pump P1 uses only a mechanical and a fluid port; under the rule it also carries empty electrical, thermal and chemical ports.
 
@@ -19,7 +42,7 @@ The effort and flow in each v2 domain are:
 
 The power base is 1 MW and the time base is 1 s.
 
-The code writes each port as one node with one effort state. Each node has a storage $C_p$ and a designed loss conductance $g_p$ to the port's reference effort, which is zero, or ambient for thermal ports. Storage comes from rotor inertia, fluid compliance or thermal capacity. Each bond inside an asset is a per-unit transformer of modulus 1 with a series loss, and in per unit that is just a resistance $R$, sometimes in series with an inertance $L$. Domain conversion, for example motor current to shaft torque, happens only on bonds inside an asset (Step 2e). Gyrators such as torque–current are represented as per-unit transformers.
+The code writes each port as one node with one effort state. Each node has a storage $C_p$ and a designed loss conductance $g_p$ to the port's reference effort, which is zero, or ambient for thermal ports. Storage comes from rotor inertia, fluid compliance or thermal capacity. Each bond inside an asset is a per-unit transformer of modulus 1 with a series loss, and in per unit that is just a resistance $R$, sometimes in series with an inertance $L$. Domain conversion, for example motor current to shaft torque, happens only on bonds inside an asset (the Formal model's Step 2e). Gyrators such as torque–current are represented as per-unit transformers.
 
 Parameters come from a design power budget. Each port gets a design effort, and each bond and coupling gets a nominal flow. Then $R$ is the effort drop divided by the flow, and $g$ closes each port's balance. When the network is solved at DC under nominal conditions it reproduces the budget to 1e-14, and a test checks this. `PARAMETERS.md` lists every value and its source.
 
@@ -35,25 +58,27 @@ v2 found that σ alone misses thermal ageing and oscillatory fatigue. The failur
 - Temperature at every thermal port: Safe is the nominal peak plus 10 K. Ageing doubles for every 10 K above Safe, and 20 days at 20 K over is a failure.
 - Fatigue on the one modelled structural mode (HDR1, 24.4 Hz): Basquin slope $m = 3$, computed on the combined, phase-summed response.
 
-## 2. Couplings
+Taken together, an asset's ports, storages, designed losses and bonds define a linear map from the flows injected at its ports to the efforts at its ports. That map is the asset's energy transfer function. The term is the eight-step framing's; the code has no separate per-asset object for it.
 
-A coupling is a reified relation from a source port on one asset to a target port on another (paper). In v2 both ends are always in the same domain, and a test enforces this. The coupling carries its mechanism, length and topology. The topology is one of the paper's three: direct port, medium-only or structure-mediated. The nominal direction is source to target. The actual direction at any moment is the sign of the coupling power.
+## Step 3. Every asset against every other
 
-In the code, a coupling is the same kind of element as a bond, a resistance $R$ with an optional inertance $L$. The only difference is that its two ends sit on different assets. v2 has 50 couplings and 31 bonds. Four of the couplings are parasitic heat paths: R1→BRG1 and R1→GB1 are structure-mediated, and VFD2→VFD1 and C1→M6 are medium-only. Parasitic couplings carry no budgeted flow. Their conductance is set to KAPPA × the target port's designed loss, with KAPPA = 0.05. That value is an assumption, and the discovery test also runs it at 0.01 and 0.2.
+The simplest model of interaction allows any port to affect any other port directly. With $N$ assets and five ports each there are $N_{\mathrm{ports}} = 5N$ ports, and so $(5N)^2 = 25N^2$ ordered port pairs. At 10,000 assets that is $2.5 \times 10^9$ possible links. A dense matrix of that size, holding one complex number per entry at one frequency, would take about 40 GB. That figure is our arithmetic ($2.5 \times 10^9 \times 16$ bytes), not a measurement.
 
-The Formal model (Step 2b–2c) writes coupling physics as an Onsager matrix $L$ and defines coupling strength as the Kedem–Caplan degree of coupling $q = L_{12}/\sqrt{L_{11}L_{22}}$ (Onsager 1931; Kedem and Caplan 1965). The code has no per-coupling Onsager matrix. Instead it computes $q$ from the admittance of the whole plant reduced onto the coupling's two ports (section 4). That substitution is marked [PROPOSED] in Step 5a.
+The scaling benchmark used v2's actual port set, about 2.2 ports per asset rather than 5, so its dense figures are smaller. At 10,016 assets there were 22,223 ports, and the dense complex matrix alone would take 7.9 GB, which does not fit in the box's 15 GB once a dense LU is attempted. At 100,000 assets it would take 788 GB. Dense solve time grew with exponent 2.84 (theory: 3).
 
-## 3. Assembling the plant as one linear system
+## Step 4. Mostly zeros, and linear: one sparse system
+
+The all-pairs bound is far from the real count. The 10,016-asset benchmark plant has 15,650 couplings plus 590 ties between tiles, which is 16,240 links against a bound of about $2.5 \times 10^9$. Its admittance matrix holds about 7.4 nonzeros per asset. Most of the all-pairs matrix is zero, and the part that is not zero is linear in this model class.
 
 All ports and links are assembled into one nodal equation in the Laplace variable $s$:
 
 $$Y(s)\,e = J, \qquad Y(s) = \operatorname{diag}\!\big(sC + g + g_{\mathrm{bnd}}\big) + B\,\operatorname{diag}\!\Big(\frac{1}{R + sL}\Big)\,B^{\mathsf T}.$$
 
-Here $e$ is the vector of 71 port efforts, $J$ is the vector of flow injections, and $B$ is the port-by-link incidence matrix, with +1 at the source port and −1 at the target port. The plant boundary is not made of assets (Step 3e). The grid at XF1 is a Norton source with conductance $g_{\mathrm{bnd}}$. The gas users at KO1 are a boundary conductance. The 2 MW of reaction heat at R1 is an injection, and ambient enters through the thermal reference. A steady operating point is one solve at $s = 0$. The steady response to a sinusoid at frequency ω is one solve at $s = j\omega$.
+Here $e$ is the vector of 71 port efforts, $J$ is the vector of flow injections, and $B$ is the port-by-link incidence matrix, with +1 at the source port and −1 at the target port. The plant boundary is not made of assets (the Formal model's Step 3e). The grid at XF1 is a Norton source with conductance $g_{\mathrm{bnd}}$. The gas users at KO1 are a boundary conductance. The 2 MW of reaction heat at R1 is an injection, and ambient enters through the thermal reference. A steady operating point is one solve at $s = 0$. The steady response to a sinusoid at frequency ω is one solve at $s = j\omega$.
 
 The same elements also give a state-space matrix $A$. Its states are the 71 port efforts plus the flows of the 39 links that have inertance, 110 states in all. Time constants range from about 2.7 µs (electrical, which the model does not resolve) to about 2.3 h (thermal). The code uses $A$ only for eigenmodes, in the timescale discovery methods, and for a stability test. The failure test does not integrate it in time. Each hour of the truth simulation is a DC solve for the operating point plus steady-state phasors for each line, which makes it quasi-static.
 
-$Y$ is structurally sparse: 233 of its 5,041 entries are nonzero. The v2 code nevertheless stores and solves it with dense NumPy routines. Sparse solvers appear only in the scaling benchmark, which is still running, so no timing from it is quoted here.
+$Y$ is structurally sparse: 233 of its 5,041 entries are nonzero. The v2 failure-test code nevertheless stores and solves it with dense NumPy routines. The scaling benchmark below solves the same equations with sparse LU.
 
 **What is linear and what is not.** All the plant physics in v2 is linear and lumped. Advection is linearised, there are no transport delays, and pipes are lumped even at 25 Hz. The nonlinear parts sit outside the solve:
 
@@ -63,9 +88,26 @@ $Y$ is structurally sparse: 233 of its 5,041 entries are nonzero. The v2 code ne
 
 v2 has no nonlinear mixing. The v1 convergent-excitation test had a mixing term, and it showed that any linear map misses the product frequency.
 
-## 4. How envelopes are discovered
+**What the benchmark measured.** The figures below are from `iro-toy-model/v2/scaling/SCALING.md`. Its plants are tiles of the v2 plant, run on one core of the box (Intel Xeon, 15 GB RAM, SciPy SuperLU), with every run single-threaded. One update means a DC solve, five fault-band solves, σ and its three derivatives for every asset, and online root-cause scoring.
 
-An envelope [PROPOSED term] is a group of assets found from the plant's physics, not assigned by the modeller (Step 5, [PROPOSED]). The paper itself notes that IRO sources use "envelope" in two senses. Here it means a grouping, not an operating envelope. The discovery code never reads the engineer's groupings. They are used only to score the result afterwards.
+| Plant | Update, factorizations stored | Update, refactorized | Plant-year at 6 h |
+|---|---|---|---|
+| 10,016 assets, grid | 19.8 ms | 141.7 ms (meshed 155.5 ms) | 28.86 s cached, 3.5 min refactorized |
+| 100,000 assets, grid | 273.8 ms | 1.55 s (meshed 11.64 s) | 6.7 min cached, 37.8 min refactorized (meshed 4.7 h) |
+
+SCALING.md rounds the 10k update to 20 ms and 0.14 s. The cost of a sparse direct solve depends on how well the coupling graph splits into pieces with small separators (George 1973; Lipton, Rose and Tarjan 1979; Davis 2006). Sparse cost grows almost linearly when couplings are local: the fitted exponents for the cached and refactorized update are 1.09 and 1.02. Random long-range ties, the meshed variant, raise the cost. Its factorization exponent is 1.50 over the whole range and about 2.3 between 30k and 100k assets.
+
+Three workloads do not scale:
+
+- Dense algebra.
+- Exact offline attribution tables, which grow as $O(N^2)$ and take 41.2 min per fault band at 100k assets (extrapolated from a chunk).
+- Time-domain simulation that resolves the 24–25 Hz fault lines. That needs about 650 steps per simulated second. A plant-year would take about 1.6 years of compute at 3k assets and an estimated 4–7 years at 10k. The model avoids this by using phasors for oscillatory content and 6-hour quasi-static steps for slow content.
+
+The benchmark did not use a GPU. Any GPU speed-up is an estimate, not a measurement.
+
+## Step 5. Natural envelopes from coupling strength
+
+An envelope [PROPOSED term] is a group of assets found from the plant's physics, not assigned by the modeller (the Formal model's Step 5, [PROPOSED]). The paper itself notes that IRO sources use "envelope" in two senses. Here it means a grouping, not an operating envelope. The discovery code never reads the engineer's groupings. They are used only to score the result afterwards.
 
 Every coupling gets a physics weight, and the asset graph is then partitioned. The code builds four kinds of weight:
 
@@ -119,7 +161,7 @@ All of this comes from one operating point. Whether envelopes change with operat
 
 Individual v2 assets span one to three domains. The two largest envelopes reach three and four domains, but Heat rejection has four assets and only two boundary domains, so in this plant the number of domains does not grow simply with envelope size. A fair test needs a plant that has a chemical domain, such as reaction, fuel or corrosion paths, and the five-port rule applied.
 
-## 5. How an envelope is reduced to one asset
+## Step 6. Each envelope becomes one asset with boundary ports
 
 This is what `envelope_reduction.py` does, and it is Step 6b of the Formal model [PROPOSED]. The method is Kron reduction, also called a Schur complement, of the envelope's own admittance matrix onto its boundary ports (Dörfler and Bullo 2013).
 
@@ -161,15 +203,15 @@ The code makes no rational or state-space fit of $Z_E(s)$. The envelope-asset is
 
 **What is lost.** In this linear model, at any one frequency, nothing is lost: the reduction is exact. The losses appear when the reduction is used as a replacement for the inside of the envelope:
 
-- **Path and attribution inside the envelope.** $Y_{E,\mathrm{red}}$ has no internal structure. Internal sources with the same boundary signature cannot be told apart from the boundary (F3, section 9). Recovering internal efforts needs the reconstruction map, and that means keeping the internal model.
+- **Path and attribution inside the envelope.** $Y_{E,\mathrm{red}}$ has no internal structure. Internal sources with the same boundary signature cannot be told apart from the boundary (F3, Known limits). Recovering internal efforts needs the reconstruction map, and that means keeping the internal model.
 - **Damage in eliminated assets.** Damage there is only available through the reconstruction map.
 - **Nonlinearity.** A Schur complement assumes linear elements. A nonlinear element inside an envelope would need re-linearisation at each operating point, and v2 does not test that.
 - **Operating mode.** The reduction holds for one parameter set and one operating point.
 - **Averaging.** Nothing is averaged here. Phase is kept, because $Y_{E,\mathrm{red}}$ is complex. v1 showed that a reduction that keeps only averaged boundary power misses convergent excitation.
 
-## 6. How the plant is solved at envelope level
+### Solving the plant at envelope level
 
-Each envelope's $Y_{E,\mathrm{red}}$ is placed in a $29 \times 29$ matrix on its boundary ports, and the 18 cross-envelope couplings are then added in, in the same way as in section 3. Each envelope's Norton injections are summed into $J_{\mathrm{eq}}$:
+Each envelope's $Y_{E,\mathrm{red}}$ is placed in a $29 \times 29$ matrix on its boundary ports, and the 18 cross-envelope couplings are then added in, in the same way as in step 4. Each envelope's Norton injections are summed into $J_{\mathrm{eq}}$:
 
 $$Y_r(s)\,e_B = J_{\mathrm{eq}}, \qquad Y_r = \operatorname{blockdiag}_E\big(Y_{E,\mathrm{red}}\big) + \sum_{c\ \text{crossing}} y_c(s)\,b_c b_c^{\mathsf T}.$$
 
@@ -179,13 +221,46 @@ The REDUCED predictor uses this solve to build transfer maps. For each frequency
 
 In the current code, the REDUCED predictor computes its damage forecast with the full design model's σ and DC maps, not through the reconstruction map. The result is the same, because the reconstruction is exact. At scale, though, the forecast would have to go through the reconstruction map, or the full model would have to be kept.
 
-## 7. How failure is attributed backwards to a source
+### Envelope cost against the full sparse solve
+
+The table compares the two approaches at 10,016 assets on the grid plant (1,565 envelopes, 9,390 boundary ports). The envelope solution matched the full sparse solution to within 5e-9 relative at every size.
+
+| Update | Full sparse | Envelope |
+|---|---|---|
+| Factorizations stored | 19.8 ms | 23.2 ms |
+| Refactorized (grid) | 141.7 ms | 186.2 ms |
+| Refactorized (meshed) | 155.5 ms | 214.7 ms |
+
+At 100,000 assets the refactorized update took 1.55 s full against 2.81 s envelope on the grid plant, and 11.64 s against 25.23 s meshed. SCALING.md explains why: the envelope boundaries act as a hand-chosen separator, which is the same elimination a sparse direct solver performs with a good ordering. The comparison is also Python batched Kron against SuperLU written in C, on one core.
+
+SCALING.md lists where envelopes should win, none of it measured yet:
+
+- A change inside one envelope costs a small local factorization plus a boundary refactor, instead of a full refactor.
+- The offline Kron work runs in parallel on several cores.
+- Recursion (RQ3) shrinks the boundary system again.
+
+The fourth argument, revealing behaviour that involves several assets, is not a cost argument. It is lead hypothesis (2).
+
+## Step 7. A failure that crosses envelopes
+
+The v2 failure test (`failure_test_v2.py`) runs each scenario for 400 days. The truth plant has every parameter perturbed by up to ±10 %, and HDR1's mode varies by ±3 % in frequency and ±20 % in damping. The operating context adds daily load swings, a load step, a 10-day heatwave and noise. Faults start at a random day between day 10 and day 30. The scenarios are:
+
+- F1, slow fouling at the cooling tower CT1.
+- F2, cavitation at pump P1.
+- F3, surge at compressor C1.
+- F4, convergent excitation: P1 and P2 at their running speeds, each below the limit on its own, combine at the HDR1 mode.
+- F5, agitator imbalance.
+- C0, no fault.
+
+Only F1 crossed an envelope boundary. Under the engineer's grouping, F1 failed in another group in all 20 runs. Under the discovered envelopes, it failed in another envelope in only 4 of 20 runs, because the discovered envelopes keep more of each fault path inside one envelope. F2–F4 failed inside the source's own envelope under both groupings. A plant with more cross-envelope paths is needed to test step 7 properly.
+
+## Step 8. Detect it and trace it back
 
 Attribution is done in `failure_test_v2.py`. The same logic runs for FULL, which has sensors at all 71 ports, REDUCED, which has the 29 boundary ports of the discovered envelopes, and REDUCED_ENG, which has the 22 boundary ports of the engineer's grouping. The model predictors differ only in which ports they sense and which transfer maps they use. LOCAL is a separate baseline that trends each asset's own σ.
 
-**Channels.** There is one DC channel and five line channels, at the five line frequencies listed in section 5. These frequencies are known to the predictor in advance, so this is not a broadband search. The sensors read port efforts (6-hour means of DC effort) and complex effort phasors for each line. They do not read power.
+**Channels.** There is one DC channel and five line channels, at the five line frequencies listed in step 6. These frequencies are known to the predictor in advance, so this is not a broadband search. The sensors read port efforts (6-hour means of DC effort) and complex effort phasors for each line. They do not read power.
 
-**Source fit.** For each channel, the predictor asks which single port, injecting flow, best explains the sensor pattern. Write the transfer map from port $p$ to the sensors as $h_p$ (column $p$ of $Y^{-1}$, or of the reduced map from section 6), write the noise weights as $W$, and write the observation as $y$. The score and the fitted amplitude are:
+**Source fit.** For each channel, the predictor asks which single port, injecting flow, best explains the sensor pattern. Write the transfer map from port $p$ to the sensors as $h_p$ (column $p$ of $Y^{-1}$, or of the reduced map from step 6), write the noise weights as $W$, and write the observation as $y$. The score and the fitted amplitude are:
 
 $$\mathrm{score}_p = \frac{\lvert (Wh_p)^{\mathsf H}(Wy)\rvert^2}{\lVert Wh_p\rVert^2}, \qquad a_p = \frac{(Wh_p)^{\mathsf H}(Wy)}{\lVert Wh_p\rVert^2}.$$
 
@@ -201,9 +276,17 @@ Source selection uses a 7-day coherent mean of $y$, and the amplitude uses a 1-d
 
 So in v2, attribution comes from three things: the transfer maps through the couplings (or the reduced port-to-port map), the forecast of entropy generation and the other damage coordinates, and the fitted amplitudes of the DC and line channels. Port power enters only through the tie-break. v1 was different. Its REDUCED predictor measured power flow across the cross-system couplings, and it used energy-balance attribution [PROPOSED]: follow the coupling with the largest rise in power upstream until reaching a system that emits more added power than it receives.
 
-**The calculus charts are display only.** The value, rate, acceleration and jerk charts on the site (0th–3rd derivative order) are drawn from the simulated series so that people can read them. No derivative is computed in `failure_test_v2.py`, `envelope_reduction.py` or `discover_envelopes.py`, and none is used for detection, forecast or attribution.
+**The calculus charts are display only.** The value, rate, acceleration and jerk charts on the site (0th–3rd derivative order) are drawn from the simulated series so that people can read them. No derivative is computed in `failure_test_v2.py`, `envelope_reduction.py` or `discover_envelopes.py`, and none is used for detection, forecast or attribution. Whether instrument calculus can detect faults on its own is RQ15, below.
 
-## 8. How distance is measured
+**Three-way detection comparison (RQ15) [PROPOSED].** This is planned but not built. Three detectors would run on the same fault and no-fault runs:
+
+- (a) the model's prediction, as above;
+- (b) instrument calculus alone: value, rate, acceleration and jerk of the readings;
+- (c) the model's band matching.
+
+The measures would be correct root cause, lead time and false alarms. No results exist yet.
+
+## Distance between assets
 
 `distances_v2.py` asks which distance between a fault source and an affected asset best ranks the size of the effect. There are 12 sources: the failure-test channels plus extra mechanisms, each at its own band. Against the 31 other assets, that makes 372 source–asset pairs. The effect is the change in the target's σ when 50 kW (0.05 pu) is injected at the source port at that band. At DC the absolute change is used, because a DC change can lower σ at some assets.
 
@@ -223,7 +306,7 @@ Each distance is computed from the model alone. None is tuned:
 
 A more negative ρ means the distance ranks the effect better. Transfer attenuation ranks it best, but it is partly circular, because the effect scales with the square of effort. The distances overlap: physical against line length is 0.58, and line length against −log q is 0.74. No single structural distance is reliable within every source, since most within-source ranges cross zero. Discovered-envelope hops rank effect better than engineer-envelope hops. The Formal model refers to a Step 7 for distance, but Step 7 has not been written.
 
-## 9. Known limits
+## Known limits
 
 These come from the v2 failure test, with 20 seeds per scenario at SAFE_FACTOR 2.0, unless stated otherwise.
 
@@ -238,6 +321,8 @@ These come from the v2 failure test, with 20 seeds per scenario at SAFE_FACTOR 2
 
 ## Where the code and the formal model differ
 
+Step numbers in this section refer to the Formal model.
+
 - **Five ports per asset (Step 1, LOCKED 2026-11-19).** The v2 code has 71 ports over 32 assets in four domains, with 1–3 ports per asset and no chemical domain. Seven assets have two ports in the same domain: CV1, CV2, GB1, HX1, HX2, IC1 and CT1. Open question for Brant: should a port that carries a pressure drop across a valve, or two separate fluid streams, be one port in that domain with a vector effort and flow, or should the asset be split? The rule also replaces "field" in Step 1's domain list with "chemical", and the paper's port typing needs the same change.
 - **Envelope boundaries span all five domains (Step 5h, [PROPOSED] hypothesis).** This is not tested. In v2 the envelope boundaries span 2, 3, 4, 2 and 4 domains.
 - **Entropy generation.** The code divides all dissipation by $T_0 = 1$ pu. Step 1 and Step 3c use $D_i/T_i$.
@@ -249,7 +334,7 @@ These come from the v2 failure test, with 20 seeds per scenario at SAFE_FACTOR 2
 - **ARI range (Step 5e).** Step 5e says the methods agree at "ARI 0.24–0.55". `discovery_ARI.csv` gives 0.22–0.48 between the PF and KC partitions. The figure 0.55 is the KC-DC $k = 4$ partition against the engineer, and the engineer's area grouping against the functional one. The v2 README and RQ1 say 0.24–0.48, but the low end in the file is 0.224 (PF-Louvain against KC 150 rad/s spectral).
 - **Mechanical port.** The code uses the mobility form (effort = speed, flow = torque). The thermal port is a pseudo-bond, so effort × flow is not power.
 - **Port directionality (Step 1, [PROPOSED]).** It is implemented in v1 but not in v2.
-- **Sparse system.** $Y$ is sparse in structure, but v2 uses dense solves.
+- **Sparse system.** $Y$ is sparse in structure, but the v2 failure test uses dense solves. Only the scaling benchmark uses sparse LU.
 - **Documentation mismatch.** The docstring of `failure_test_v2.py` says hourly. The README says "6 h steps". Both are right: the truth simulation runs hourly, and the predictors work on 6-hour means, evaluated every 12 hours.
 
 ## References
@@ -268,6 +353,9 @@ Only entries in `iro-paper/references/references.bib` are cited. Entries marked 
 - Hubert and Arabie 1985, "Comparing partitions" (`hubert1985comparing`) †.
 - Pérez-Arriaga, Verghese and Schweppe 1982, "Selective modal analysis… Part I" (`perezarriaga1982sma`).
 - Winkelman, Chow, Allemong and Kokotović 1980, "Multi-time-scale analysis of a power system" (`winkelman1980multitimescale`) †.
-- van der Schaft and Jeltsema 2014, *Port-Hamiltonian Systems Theory* (`vanderschaft2014porthamiltonian`), for the port-Hamiltonian form in Step 3b.
+- George 1973, "Nested dissection of a regular finite element mesh" (`george1973nested`).
+- Lipton, Rose and Tarjan 1979, "Generalized nested dissection" (`lipton1979generalized`).
+- Davis 2006, *Direct Methods for Sparse Linear Systems* (`davis2006direct`).
+- van der Schaft and Jeltsema 2014, *Port-Hamiltonian Systems Theory* (`vanderschaft2014porthamiltonian`), for the port-Hamiltonian form in the Formal model's Step 3b.
 
 The v2 code also cites Chow (1982) and Ng–Jordan–Weiss for spectral clustering. Neither is in `references.bib`, so neither is cited here.

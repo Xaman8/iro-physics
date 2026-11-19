@@ -10,9 +10,12 @@
   <header class="top" data-page="index.html"></header>
   <main class="wrap">
     <p class="kicker">Inverted Reliability Ontology</p>
-    <h1>Can a failure in one envelope be predicted from energy that arrives from another, and how far is the cause?</h1>
-    <p class="lede">The bench apparatus is a toy plant. Assets exchange power through ports: an effort and a flow, one pair for each domain. Couplings are the links, source port to target port. Envelopes group the assets, and each envelope reduces to one equivalent asset whose ports sit on the boundary. Entropy generation is the damage proxy.</p>
-    <p class="lede">The headline test is a pump pulsation in envelope A. The power crosses the boundary and heat exchanger HX1, in envelope B, reaches its limit. The drawings below are the plant. The numbers under them are counts from this plant and from the study files.</p>
+    <h1>Can a failure be predicted from energy that started somewhere else in the plant, however the cause and effect are separated?</h1>
+    <div class="opening">
+      <p>IRO Physics models a plant as assets that pass energy to each other through ports and couplings. It groups those assets into envelopes and reduces each envelope to one equivalent asset. Entropy generation stands in for damage. The work so far runs on two made-up toy plants, not real plant data. The first has 11 assets in 4 envelopes set by function. The second has 32 assets, 71 ports and 50 couplings, and its 5 envelopes are found from coupling strength rather than assigned.</p>
+      <p>In the first plant, pulsation from a pump in one envelope wears out a heat exchanger in another. Both the full model and the envelope model traced the damage back to the pump in all 40 runs, about 62 days before failure. A local sensor on the heat exchanger warned just as early, but it never named the source. In the second plant, the models named the cross-envelope cause about 165 days ahead, with no false alarms in 40 fault-free runs. Local trending raised a false alarm in all 40 of those runs. The models still have limits: one fault looks the same as another at the envelope boundary, combined excitation is over-predicted, and in one scenario the wrong failing asset was picked. A scaling benchmark showed that solving every asset is fast with sparse math, about 20 ms per update at 10,000 assets. So the case for envelopes rests on scale, local updates and multi-asset behaviour, not on speed alone.</p>
+      <p>Next steps: give every asset five ports, test whether calculus on the instruments detects the faults the model predicts, and compare a full every-asset baseline against the envelope model on the same faults.</p>
+    </div>
     <div class="actions">
       <a class="btn primary" href="bench.html">Open the bench apparatus</a>
       <a class="btn" href="questions.html">(1) Research questions</a>

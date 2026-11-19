@@ -89,6 +89,7 @@ h1 {
   margin: 0 0 16px;
 }
 .lede { font-size: 18.5px; line-height: 1.5; max-width: 68ch; margin: 0 0 18px; }
+.opening p { font-size: 17.5px; line-height: 1.5; max-width: 74ch; margin: 0 0 14px; }
 .lede + .lede { color: var(--muted); font-size: 16.5px; }
 .actions { display: flex; gap: 10px; margin: 22px 0 8px; }
 
