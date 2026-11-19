@@ -6,6 +6,7 @@ const LINKS = [
   ["design.html", "(4) Experimental Design"],
   ["bench.html", "Apparatus"],
   ["results.html", "Results"],
+  ["explorer.html", "Envelope explorer"],
   ["paper.html", "Paper"],
 ];
 
