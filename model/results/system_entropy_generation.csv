@@ -1,0 +1,10 @@
+system,name,entropy_generation_nominal,entropy_generation_added_per_pu2_pulsation
+SYS_A,Pumping system (A),0.3754745581657499,0.13035520064040357
+SYS_B,Heat-exchange system (B),0.10071401302619433,0.17732226650165062
+SYS_C,Reactor system (C),0.52220621106626,0.0859748231454793
+SYS_D,Electrical supply system (D),0.6458983695326295,0.0010859571718987247
+cross-system coupling VFD1.electrical->M1.electrical,coupling-anchored,0.010088995691446754,0.00039734806149111906
+cross-system coupling BUS1.electrical->AG1.electrical,coupling-anchored,0.0077571175288809,0.00048044587290701823
+cross-system coupling P1.fluid->HX1.fluid,coupling-anchored,1.558037596863285e-07,0.027570643104106854
+cross-system coupling HX1.thermal->R1.thermal,coupling-anchored,0.02447608873936996,1.722380929023778e-09
+cross-system coupling CV1.fluid->R1.fluid,coupling-anchored,0.0056914572738909425,0.0426695171896952

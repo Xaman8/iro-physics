@@ -1,0 +1,606 @@
+{
+  "0.01": {
+    "FULL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.375,
+      "lead_time_days_iqr": [
+        59.75,
+        73.41666666666666
+      ],
+      "root_cause_SYS_A_correct": "20/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.465539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 15,
+        "n_no_failure_predicted": 0,
+        "median_signed": 16.45833333333333,
+        "MAE": 24.08888888888888
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.7916666666666714,
+        "MAE": 6.4541666666666675
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.5625,
+        "MAE": 4.6125
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.1875,
+        "MAE": 3.1874999999999987
+      }
+    },
+    "REDUCED": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.5,
+      "lead_time_days_iqr": [
+        59.8125,
+        73.60416666666666
+      ],
+      "root_cause_SYS_A_correct": "20/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.465539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 15,
+        "n_no_failure_predicted": 0,
+        "median_signed": 16.70833333333333,
+        "MAE": 23.08888888888888
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.5625,
+        "MAE": 7.091666666666669
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.8125,
+        "MAE": 4.179166666666665
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.2291666666666643,
+        "MAE": 3.054166666666666
+      }
+    },
+    "LOCAL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.625,
+      "lead_time_days_iqr": [
+        59.75,
+        73.72916666666666
+      ],
+      "root_cause_SYS_A_correct": "0/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.340539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 15,
+        "n_no_failure_predicted": 0,
+        "median_signed": 14.458333333333329,
+        "MAE": 22.18888888888888
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.9375,
+        "MAE": 6.7666666666666675
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.6875,
+        "MAE": 3.8458333333333328
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.312499999999993,
+        "MAE": 3.0666666666666655
+      }
+    },
+    "LOCAL_DC": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 0,
+      "lead_time_days_median": null,
+      "lead_time_days_iqr": null,
+      "root_cause_SYS_A_correct": "0/0",
+      "failing_item_HX1_correct": "0/0",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": null,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      }
+    }
+  },
+  "0.05": {
+    "FULL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.25,
+      "lead_time_days_iqr": [
+        59.21875,
+        72.47916666666666
+      ],
+      "root_cause_SYS_A_correct": "18/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.965539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 13,
+        "n_no_failure_predicted": 0,
+        "median_signed": 14.458333333333329,
+        "MAE": 20.09935897435897
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.6666666666666714,
+        "MAE": 6.291666666666667
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.4375,
+        "MAE": 4.275
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.0416666666666714,
+        "MAE": 2.9374999999999987
+      }
+    },
+    "REDUCED": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.75,
+      "lead_time_days_iqr": [
+        60.0,
+        73.64583333333334
+      ],
+      "root_cause_SYS_A_correct": "20/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 6.965539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 15,
+        "n_no_failure_predicted": 0,
+        "median_signed": 18.20833333333333,
+        "MAE": 21.672222222222214
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.5625,
+        "MAE": 7.141666666666668
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.8958333333333286,
+        "MAE": 4.179166666666665
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.2291666666666643,
+        "MAE": 3.054166666666666
+      }
+    },
+    "LOCAL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.70833333333333,
+      "lead_time_days_iqr": [
+        59.40625,
+        72.85416666666666
+      ],
+      "root_cause_SYS_A_correct": "0/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.925118159768624,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 14,
+        "n_no_failure_predicted": 0,
+        "median_signed": 15.375,
+        "MAE": 21.196428571428566
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.6875,
+        "MAE": 6.841666666666667
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.5625,
+        "MAE": 3.866666666666667
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.187499999999993,
+        "MAE": 2.966666666666666
+      }
+    },
+    "LOCAL_DC": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 0,
+      "lead_time_days_median": null,
+      "lead_time_days_iqr": null,
+      "root_cause_SYS_A_correct": "0/0",
+      "failing_item_HX1_correct": "0/0",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": null,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      }
+    }
+  },
+  "0.1": {
+    "FULL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 63.5,
+      "lead_time_days_iqr": [
+        57.71875,
+        70.45833333333334
+      ],
+      "root_cause_SYS_A_correct": "17/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 9.090539162483955,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 12,
+        "n_no_failure_predicted": 0,
+        "median_signed": 17.249999999999993,
+        "MAE": 19.524305555555557
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.0416666666666714,
+        "MAE": 5.866666666666667
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.9375,
+        "MAE": 3.545833333333333
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.2916666666666714,
+        "MAE": 2.3874999999999984
+      }
+    },
+    "REDUCED": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 64.0,
+      "lead_time_days_iqr": [
+        59.6875,
+        73.04166666666666
+      ],
+      "root_cause_SYS_A_correct": "20/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 7.362075438961423,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 15,
+        "n_no_failure_predicted": 0,
+        "median_signed": 16.75,
+        "MAE": 23.055555555555546
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.5625,
+        "MAE": 7.166666666666669
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.7708333333333286,
+        "MAE": 4.179166666666665
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.2291666666666643,
+        "MAE": 3.054166666666666
+      }
+    },
+    "LOCAL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 63.25,
+      "lead_time_days_iqr": [
+        57.65625,
+        71.91666666666666
+      ],
+      "root_cause_SYS_A_correct": "0/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 8.599903404901337,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 11,
+        "n_no_failure_predicted": 0,
+        "median_signed": 16.54166666666667,
+        "MAE": 18.40151515151515
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.4375,
+        "MAE": 6.929166666666667
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.3125,
+        "MAE": 3.9666666666666672
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.8333333333333286,
+        "MAE": 2.841666666666666
+      }
+    },
+    "LOCAL_DC": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 0,
+      "lead_time_days_median": null,
+      "lead_time_days_iqr": null,
+      "root_cause_SYS_A_correct": "0/0",
+      "failing_item_HX1_correct": "0/0",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": null,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      }
+    }
+  },
+  "0.2": {
+    "FULL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 62.625,
+      "lead_time_days_iqr": [
+        55.33333333333333,
+        68.64583333333334
+      ],
+      "root_cause_SYS_A_correct": "18/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 9.920780455502925,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 11,
+        "n_no_failure_predicted": 0,
+        "median_signed": 16.20833333333333,
+        "MAE": 17.068181818181817
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": -0.9583333333333286,
+        "MAE": 4.820833333333333
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": -2.4375,
+        "MAE": 2.954166666666667
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": -1.9791666666666643,
+        "MAE": 2.5125
+      }
+    },
+    "REDUCED": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 63.125,
+      "lead_time_days_iqr": [
+        58.520833333333336,
+        71.22916666666666
+      ],
+      "root_cause_SYS_A_correct": "20/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 8.57143157535867,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 13,
+        "n_no_failure_predicted": 0,
+        "median_signed": 18.25,
+        "MAE": 23.88782051282051
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.5625,
+        "MAE": 7.204166666666668
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 2.7708333333333286,
+        "MAE": 4.166666666666666
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.2291666666666643,
+        "MAE": 3.054166666666666
+      }
+    },
+    "LOCAL": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 20,
+      "lead_time_days_median": 62.25,
+      "lead_time_days_iqr": [
+        55.166666666666664,
+        69.77083333333334
+      ],
+      "root_cause_SYS_A_correct": "0/20",
+      "failing_item_HX1_correct": "20/20",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": 10.866652393772998,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 11,
+        "n_no_failure_predicted": 0,
+        "median_signed": 23.54166666666667,
+        "MAE": 30.189393939393934
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": -1.7916666666666714,
+        "MAE": 7.504166666666668
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 1.0208333333333357,
+        "MAE": 4.187500000000002
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 20,
+        "n_no_failure_predicted": 0,
+        "median_signed": 0.2083333333333286,
+        "MAE": 2.7166666666666672
+      }
+    },
+    "LOCAL_DC": {
+      "mechanism_runs_with_target_failure": 20,
+      "warned_before_failure": 0,
+      "lead_time_days_median": null,
+      "lead_time_days_iqr": null,
+      "root_cause_SYS_A_correct": "0/0",
+      "failing_item_HX1_correct": "0/0",
+      "no_mechanism_runs": 20,
+      "no_mechanism_runs_with_alarm": 0,
+      "detection_delay_after_onset_days_median": null,
+      "tstar_error_days_at_RUL_60d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_30d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_14d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      },
+      "tstar_error_days_at_RUL_7d": {
+        "n": 0,
+        "n_no_failure_predicted": 0,
+        "median_signed": null,
+        "MAE": null
+      }
+    }
+  }
+}
