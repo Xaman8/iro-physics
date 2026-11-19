@@ -22,11 +22,11 @@
     },
     {
       "file": "assets/explainer/explainer_2_envelopes.svg",
-      "title": "What if we modelled it differently?",
-      "caption": "Our hypothesis is that in a large or tightly meshed plant, running the whole graph in real time would take too much computing. So we group the assets into natural envelopes, found from how strongly they exchange energy. In the v1 toy plant the 4 envelopes were set by function, and 5 of 13 couplings cross a boundary. The v2 plant (32 assets) finds envelopes from coupling strength (see Results).",
+      "title": "Envelopes from coupling strength, tested against random groupings",
+      "caption": "We group the assets into envelopes found from how strongly they exchange energy, and test them as a structure for sensing and for reading the plant, against random groupings of the same sizes. In the v1 toy plant the 4 envelopes were set by function, and 5 of 13 couplings cross a boundary. The v2 plant (32 assets) finds envelopes from coupling strength (see Results).",
       "links": [
         { "text": "Results", "href": "results.html" },
-        { "text": "Our hypothesis", "href": "hypotheses.html#h8" }
+        { "text": "random groupings", "href": "hypotheses.html" }
       ]
     },
     {

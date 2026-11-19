@@ -19,7 +19,7 @@ export function mountEnvelope(root, { plant, scenario, getFault, clock, initialM
     <div class="pane-scroll">
       <div class="env-head">
         <h2>Envelope physics</h2>
-        <p class="honest">Envelopes hold the assets. A port is a dot. A coupling is the line between ports, and its width follows power, P = e·f. Entropy generation fills the bar. The limit is entropic endurance.</p>
+        <p class="honest">Envelopes hold the assets. A port is a dot. A coupling is the line between ports, and its width follows power, P = e·f. Entropy generation fills the bar. In this v1 toy the limit is entropic endurance; the study now keeps entropy generation as a balance check and tracks damage per mechanism (RQ10).</p>
       </div>
       <div class="env-tools">
         <label>View <select id="envMode">
