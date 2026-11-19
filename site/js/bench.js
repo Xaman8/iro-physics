@@ -1,6 +1,6 @@
 import { Clock } from "./clock.js";
 import { mountPhysics } from "./physics-view.js";
-import { mountEnvelope } from "./envelope-view.js";
+import { mountNest } from "./envelope-tree.js";
 import { mountV2 } from "./v2-graph.js";
 import { text } from "./format.js";
 
@@ -40,12 +40,10 @@ faultSelect.value = fault.id;
 const physics = mountPhysics(document.getElementById("physics"), {
   plant, scenario, getFault: () => fault, clock,
 });
-const envelope = mountEnvelope(document.getElementById("envelope"), {
-  plant, scenario, getFault: () => fault, clock,
-  initialMode: params.get("view") === "reduced" ? "reduced" : "grouped",
+mountNest(document.getElementById("envelope"), {
+  peer: { href: "explorer.html", label: "Envelope explorer" },
 });
 physics.focusAsset(params.get("asset") || fault.targetAssetId);
-envelope.setFault();
 physics.setFault();
 
 function describeRun() {
@@ -89,7 +87,6 @@ faultSelect.addEventListener("change", () => {
   fault = scenario.faults.find((item) => item.id === faultSelect.value);
   physics.focusAsset(fault.targetAssetId);
   physics.setFault();
-  envelope.setFault();
   describeRun();
 });
 

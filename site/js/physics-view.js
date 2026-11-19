@@ -222,7 +222,7 @@ export function mountPhysics(root, { plant, scenario, getFault, clock }) {
     if (!ctx) return;
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
-    const pad = { l: 42, r: 18, t: 18, b: 36 };
+    const pad = { l: 42, r: 18, t: 30, b: 36 };
     const pw = w - pad.l - pad.r;
     const ph = h - pad.t - pad.b;
     const tMax = fault.assets[center].sigma.length;
@@ -241,12 +241,8 @@ export function mountPhysics(root, { plant, scenario, getFault, clock }) {
         ctx.fillStyle = "rgba(9,11,16,0.38)";
         ctx.fillRect(x0, pad.t, x1 - x0, ph);
       }
-      ctx.fillStyle = "rgba(255,255,255,0.72)";
-      ctx.font = "10px system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      if (band.label && x1 - x0 > 18) ctx.fillText(band.label, (x0 + x1) / 2, pad.t + 3);
     }
+    drawPhaseLabels(ctx, bounds, xAt);
     ctx.strokeStyle = "rgba(255,255,255,0.08)";
     ctx.fillStyle = "rgba(255,255,255,0.55)";
     ctx.font = "11px system-ui, sans-serif";
@@ -443,6 +439,52 @@ function acScale(fault) {
   let scale = 0;
   for (const v of row.powerAc) scale = Math.max(scale, Math.abs(Number(v)));
   return scale || 1;
+}
+
+const PHASE_SHORT = {
+  NOMINAL: "NOM",
+  TRANSIENT: "TRANS",
+  "AFTER ONSET": "AFTER",
+  "PRE-FAULT": "PRE",
+  "TRADITIONAL P–F": "P–F",
+  DAMAGE: "DMG",
+  FAILED: "FAIL",
+};
+
+function drawPhaseLabels(ctx, bounds, xAt) {
+  ctx.font = "10px system-ui, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillStyle = "rgba(255,255,255,0.88)";
+  const placed = [];
+  const hits = (row, left, right) => placed.some((item) => item.row === row && right > item.left - 4 && left < item.right + 4);
+  for (let i = 0; i < bounds.length - 1; i++) {
+    const label = bounds[i].label;
+    if (!label) continue;
+    const x0 = xAt(bounds[i].t);
+    const x1 = xAt(bounds[i + 1].t);
+    const mid = (x0 + x1) / 2;
+    const span = x1 - x0;
+    let text = label;
+    let width = ctx.measureText(text).width;
+    if (width + 8 > span) {
+      text = PHASE_SHORT[label] || label;
+      width = ctx.measureText(text).width;
+    }
+    let left = mid - width / 2;
+    let right = mid + width / 2;
+    let row = hits(0, left, right) ? 1 : 0;
+    if (hits(row, left, right) && text !== (PHASE_SHORT[label] || label)) {
+      text = PHASE_SHORT[label] || label;
+      width = ctx.measureText(text).width;
+      left = mid - width / 2;
+      right = mid + width / 2;
+      row = hits(0, left, right) ? 1 : 0;
+    }
+    if (hits(row, left, right)) continue;
+    placed.push({ left, right, row });
+    ctx.fillText(text, mid, 2 + row * 13);
+  }
 }
 
 function bandFill(label) {

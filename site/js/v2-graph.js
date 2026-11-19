@@ -19,8 +19,31 @@ const BOX = {
 const W = 966;
 const H = 560;
 
+const TONES = Object.values(PALETTE);
+
+function layoutOf(envelopes) {
+  const known = envelopes.every((env) => BOX[env.name] && PALETTE[env.name]);
+  if (known) {
+    return Object.fromEntries(envelopes.map((env) => [env.id, { box: BOX[env.name], tone: PALETTE[env.name] }]));
+  }
+  const cols = envelopes.length <= 4 ? 2 : 3;
+  const rows = Math.ceil(envelopes.length / cols);
+  const gap = 16;
+  const w = (W - gap * (cols + 1)) / cols;
+  const h = (H - gap * (rows + 1)) / rows;
+  return Object.fromEntries(envelopes.map((env, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return [env.id, {
+      box: { x: gap + col * (w + gap), y: gap + row * (h + gap), w, h },
+      tone: TONES[i % TONES.length],
+    }];
+  }));
+}
+
 export function mountV2(graphHost, detailHost, plant) {
   const envById = Object.fromEntries(plant.envelopes.map((env) => [env.id, env]));
+  const layout = layoutOf(plant.envelopes);
   let selected = plant.envelopes[0].id;
 
   graphHost.innerHTML = `
@@ -29,12 +52,12 @@ export function mountV2(graphHost, detailHost, plant) {
     <div class="v2-legend" id="v2legend"></div>`;
   const stage = graphHost.querySelector("#v2svg");
   graphHost.querySelector("#v2legend").innerHTML = plant.envelopes.map((env) => {
-    const tone = PALETTE[env.name];
+    const tone = layout[env.id].tone;
     return `<span><i style="background:${tone.fill};box-shadow:inset 0 0 0 1.5px ${tone.stroke}"></i>${env.name}</span>`;
   }).join("");
 
   function slots(env) {
-    const box = BOX[env.name];
+    const box = layout[env.id].box;
     const assets = plant.assets.filter((a) => a.envelopeId === env.id);
     const n = assets.length;
     const cols = n <= 3 ? n : n <= 4 ? 2 : n <= 8 ? 4 : 5;
@@ -63,7 +86,7 @@ export function mountV2(graphHost, detailHost, plant) {
   }
 
   function draw() {
-    const boxes = plant.envelopes.map((env) => ({ env, box: BOX[env.name], tone: PALETTE[env.name] }));
+    const boxes = plant.envelopes.map((env) => ({ env, box: layout[env.id].box, tone: layout[env.id].tone }));
     const regions = boxes.map(({ env, box, tone }) => {
       const on = env.id === selected;
       return `<g data-env="${env.id}" style="cursor:pointer">
@@ -88,8 +111,8 @@ export function mountV2(graphHost, detailHost, plant) {
     }
     const maxPower = Math.max(0.001, ...[...bundles.values()].map((b) => b.power));
     const lines = [...bundles.values()].map((bundle) => {
-      const from = BOX[envById[bundle.a].name];
-      const to = BOX[envById[bundle.b].name];
+      const from = layout[bundle.a].box;
+      const to = layout[bundle.b].box;
       const p1 = edgePoint(from, to);
       const p2 = edgePoint(to, from);
       const width = (1.25 + 5.5 * Math.sqrt(bundle.power / maxPower)).toFixed(2);
