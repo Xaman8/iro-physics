@@ -126,19 +126,23 @@ h1 {
 .kids { display: flex; flex-wrap: nowrap; justify-content: center; gap: 18px 14px; position: relative; width: max-content; min-width: 100%; padding-top: 10px; }
 .kids > .enode { position: relative; z-index: 1; }
 .sibs { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 0; }
-.chart-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-.calc-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+.chart-row { display: flex; flex-direction: column; gap: 16px; }
+.calc-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; width: 100%; }
 .calc-card h2 { font-family: var(--serif); font-weight: 500; font-size: 22px; margin: 0 0 8px; }
 .calc-card h3 { margin: 8px 0 4px; font-size: 13px; color: var(--muted); font-weight: 650; }
-.orders { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.orders { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .orders figure { margin: 0; }
 .orders figcaption { font-size: 11px; color: var(--faint); }
-.orders canvas { width: 100%; height: 108px; display: block; background: #fff; border-radius: 8px; border: 1px solid var(--line); }
+.orders canvas { width: 100%; height: 120px; display: block; background: #fff; border-radius: 8px; border: 1px solid var(--line); }
 .orders figcaption span, .calc-card h3 span { color: var(--faint); font-weight: 500; }
 .pane .nest-root { height: 100%; overflow: auto; padding: 10px 12px 28px; }
+@media (min-width: 1100px) {
+  body.app #v1views #physics { flex: 0 0 300px; }
+  body.app #v1views #envelope { flex: 1 1 auto; }
+}
 @media (max-width: 720px) {
-  .orders { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .enode-btn { min-width: 64px; padding: 7px 8px; }
+  .orders { grid-template-columns: repeat(4, minmax(200px, 1fr)); overflow-x: auto; }
 }
 .lede + .lede { color: var(--muted); font-size: 16.5px; }
 .actions { display: flex; gap: 10px; margin: 22px 0 8px; }

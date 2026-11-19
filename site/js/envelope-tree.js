@@ -18,8 +18,8 @@ export function mountNest(root, { peer } = {}) {
         <button type="button" class="btn" data-tree="discovered" aria-pressed="false">Discovered</button>
       </div>
       <div class="seg" role="group" aria-label="Days shown">
-        <button type="button" class="btn" data-win="all" aria-pressed="true">All days</button>
-        <button type="button" class="btn" data-win="fault" aria-pressed="false">Onset to failure</button>
+        <button type="button" class="btn" data-win="all" aria-pressed="false">All days</button>
+        <button type="button" class="btn" data-win="fault" aria-pressed="true">Onset to failure</button>
       </div>
       <ul class="dom-legend">${Object.keys(DOMAIN).map((name) =>
         `<li><i style="background:${DOMAIN[name]}"></i>${name}</li>`
@@ -38,7 +38,7 @@ export function mountNest(root, { peer } = {}) {
   const notice = root.querySelector("[data-notice]");
 
   let mode = "designed";
-  let windowMode = "all";
+  let windowMode = "fault";
   const packs = {};
   let byId = {};
   let boundary = [];
@@ -316,14 +316,27 @@ export function mountNest(root, { peer } = {}) {
     }
   }
 
-  function dayTick(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "";
-  if (Math.abs(n) >= 10) return String(Math.round(n));
-  return String(Math.round(n * 10) / 10);
-}
+  function shortNum(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "";
+    const ax = Math.abs(n);
+    if (ax >= 100) return String(Math.round(n));
+    if (ax >= 10) return String(Math.round(n * 10) / 10);
+    if (ax >= 1) return String(Math.round(n * 100) / 100);
+    return sig3(n);
+  }
 
-function nearest(days, day) {
+  function dayTicks(d0, d1) {
+    const start = Math.ceil(Number(d0));
+    const end = Math.floor(Number(d1));
+    if (end <= start) return [Math.round(d0), Math.round(d1)];
+    const count = end - start >= 90 ? 4 : 3;
+    const ticks = [];
+    for (let k = 0; k < count; k++) ticks.push(Math.round(start + ((end - start) * k) / (count - 1)));
+    return [...new Set(ticks)];
+  }
+
+  function nearest(days, day) {
     let best = 0;
     let gap = Infinity;
     days.forEach((value, index) => {
@@ -334,72 +347,71 @@ function nearest(days, day) {
   }
 
   function drawSeries(canvas, series, days, idx, marks) {
-    const width = canvas.clientWidth || 140;
-    const height = 108;
+    const width = canvas.clientWidth || 220;
+    const height = 120;
     const ratio = window.devicePixelRatio || 1;
     canvas.width = Math.round(width * ratio);
     canvas.height = Math.round(height * ratio);
     const ctx = canvas.getContext("2d");
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     ctx.clearRect(0, 0, width, height);
-    const padL = 46;
-    const padR = 8;
-    const padT = 8;
-    const padB = 18;
+    const padL = 44;
+    const padR = 12;
+    const padT = 10;
+    const padB = 22;
+    const plotW = Math.max(40, width - padL - padR);
+    const d0 = Number(days[idx[0]]);
+    const d1 = Number(days[idx[idx.length - 1]]);
+    const span = d1 - d0 || 1;
+    const xDay = (day) => padL + ((Number(day) - d0) / span) * plotW;
     const scaleIdx = idx.filter((i) => i !== 0 && i !== series.length - 1);
-    const used = (scaleIdx.length > 2 ? scaleIdx : idx).map((i) => series[i]);
+    const used = (scaleIdx.length > 2 ? scaleIdx : idx).map((i) => Number(series[i]));
     let lo = Math.min(...used);
     let hi = Math.max(...used);
     if (!Number.isFinite(lo) || lo === hi) { lo = (Number.isFinite(lo) ? lo : 0) - 1; hi = (Number.isFinite(hi) ? hi : 0) + 1; }
-    const slack = (hi - lo) * 0.08;
+    const slack = (hi - lo) * 0.1;
     lo -= slack;
     hi += slack;
-    const xAt = (i) => {
-      const place = idx.indexOf(i);
-      const n = Math.max(1, idx.length - 1);
-      return padL + ((place < 0 ? 0 : place) / n) * (width - padL - padR);
-    };
-    const yAt = (v) => padT + (1 - (v - lo) / (hi - lo)) * (height - padT - padB);
+    const yAt = (v) => padT + (1 - (Number(v) - lo) / (hi - lo)) * (height - padT - padB);
     ctx.beginPath();
     ctx.strokeStyle = "#0f5c56";
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.6;
     idx.forEach((i, n) => {
-      const x = xAt(i);
+      const x = xDay(days[i]);
       const y = yAt(series[i]);
       if (n === 0) ctx.moveTo(x, y);
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
-    markLine(ctx, marks.onset, idx, xAt, padT, height - padB, "#8a6d12", true);
-    markLine(ctx, marks.fail, idx, xAt, padT, height - padB, "#9f1239", false);
+    const xIndex = (index) => (idx.includes(index) ? xDay(days[index]) : null);
+    markLine(ctx, xIndex(marks.onset), padT, height - padB, "#8a6d12", true);
+    markLine(ctx, xIndex(marks.fail), padT, height - padB, "#9f1239", false);
     ctx.fillStyle = "#8a8276";
-    ctx.font = "10px ui-monospace, monospace";
-    ctx.textBaseline = "top";
-    ctx.fillText(sig3(hi), 2, 1);
-    ctx.textBaseline = "bottom";
-    ctx.fillText(sig3(lo), 2, height - padB);
-    ctx.textAlign = "left";
+    ctx.font = "11px ui-monospace, monospace";
+    const yTicks = [hi, (hi + lo) / 2, lo];
+    yTicks.forEach((value) => {
+      const y = yAt(value);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(shortNum(value), 2, Math.min(height - padB - 4, Math.max(padT + 4, y)));
+    });
     ctx.textBaseline = "alphabetic";
-    const ticks = width < 240
-      ? [idx[0], idx[idx.length - 1]]
-      : [idx[0], idx[Math.floor((idx.length - 1) / 2)], idx[idx.length - 1]];
-    ticks.forEach((i, n) => {
-      const x = xAt(i);
-      const last = n === ticks.length - 1;
-      ctx.textAlign = n === 0 ? "left" : last ? "right" : "center";
-      ctx.fillText(dayTick(days[i]), last ? Math.min(x, width - 2) : x, height - 2);
+    dayTicks(d0, d1).forEach((day, n, all) => {
+      const x = xDay(day);
+      ctx.textAlign = n === 0 ? "left" : n === all.length - 1 ? "right" : "center";
+      const labelX = n === 0 ? padL : n === all.length - 1 ? padL + plotW : x;
+      ctx.fillText(String(day), labelX, height - 4);
     });
     ctx.textAlign = "left";
   }
 
-  function markLine(ctx, index, idx, xAt, top, bottom, color, dashed) {
-    if (index < 0 || !idx.includes(index)) return;
+  function markLine(ctx, x, top, bottom, color, dashed) {
+    if (x == null) return;
     ctx.save();
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
     if (dashed) ctx.setLineDash([3, 3]);
     ctx.beginPath();
-    const x = xAt(index);
     ctx.moveTo(x, top);
     ctx.lineTo(x, bottom);
     ctx.stroke();
