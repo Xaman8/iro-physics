@@ -127,11 +127,19 @@ export function mountBoard(root, { clock, onSpan } = {}) {
         <div class="filters" data-filters></div>
         <p class="now-read" data-now></p>
         <div class="axis-labels"><span data-axis-left></span><span data-axis-right></span></div>
-        <div class="chart-stage">
-          <canvas data-chart></canvas>
-          <div class="readout" data-readout hidden></div>
+        <div class="figure-stack pf-on">
+          <div class="chart-stage">
+            <canvas data-chart></canvas>
+            <div class="readout" data-readout hidden></div>
+          </div>
+          <div class="pf-stage" data-pf-stage>
+            <span class="pf-axis">Condition</span>
+            <canvas data-pf-chart></canvas>
+            <div class="readout" data-pf-readout hidden></div>
+          </div>
         </div>
         <ul class="trace-legend" data-legend></ul>
+        <p class="pf-note" data-pf-note></p>
         <details class="board-notes">
           <summary>Notes</summary>
           <p class="ex-note" data-notice>This is a made-up toy plant, not real plant data. The charts are for display only.</p>
@@ -157,6 +165,11 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   const axisRight = root.querySelector("[data-axis-right]");
   const scaleNote = root.querySelector("[data-scale-note]");
   const canvas = root.querySelector("[data-chart]");
+  const pfCanvas = root.querySelector("[data-pf-chart]");
+  const pfStage = root.querySelector("[data-pf-stage]");
+  const pfNote = root.querySelector("[data-pf-note]");
+  const pfReadout = root.querySelector("[data-pf-readout]");
+  const stack = root.querySelector(".figure-stack");
   const readout = root.querySelector("[data-readout]");
   const legendEl = root.querySelector("[data-legend]");
   const plantCaption = root.querySelector("[data-plant-caption]");
@@ -175,6 +188,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   const measures = new Set(["sigma", "boundary_power"]);
   const orders = new Set([0]);
   const domainsOn = new Set(Object.keys(DOMAIN));
+  let showPf = true;
   const packs = {};
   const tsCache = new Map();
   let couplings = null;
@@ -278,6 +292,8 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     if (orderBtn) { toggleSet(orders, Number(orderBtn.dataset.order)); return; }
     const domainBtn = event.target.closest("[data-domain]");
     if (domainBtn) { toggleSet(domainsOn, domainBtn.dataset.domain); return; }
+    const pfBtn = event.target.closest("[data-pf]");
+    if (pfBtn && pfBtn.hasAttribute("data-pf")) { setPf(!showPf); return; }
     const crumb = event.target.closest("[data-crumb]");
     if (crumb) { selectParent(crumb.dataset.crumb); }
   });
@@ -339,6 +355,16 @@ export function mountBoard(root, { clock, onSpan } = {}) {
 
   const watcher = new ResizeObserver(() => { if (plot) draw(); });
   watcher.observe(canvas);
+  watcher.observe(pfCanvas);
+
+  function setPf(on) {
+    showPf = on;
+    stack.classList.toggle("pf-on", on);
+    pfStage.hidden = !on;
+    pfNote.hidden = !on;
+    renderFilters();
+    requestAnimationFrame(() => { if (plot) draw(); });
+  }
 
   function toggleSet(set, value) {
     if (set.has(value)) set.delete(value);
@@ -575,7 +601,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       <button type="button" class="chip-btn" data-win="all" aria-pressed="${windowMode === "all" ? "true" : "false"}">All days</button>`;
     filtersEl.innerHTML = `
       <div class="filter-row"><span>Children</span><div>${childChips}</div><span>Days</span><div>${windows}</div></div>
-      <div class="filter-row"><span>Show</span><div>${measureChips}${orderChips}</div><span>Domain</span><div>${domainChips}</div></div>`;
+      <div class="filter-row"><span>Show</span><div>${measureChips}${orderChips}<button type="button" class="chip-btn" data-pf aria-pressed="${showPf ? "true" : "false"}">P–F</button></div><span>Domain</span><div>${domainChips}</div></div>`;
   }
 
   function indicesFor(days) {
@@ -711,7 +737,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     const padL = 54;
     const padR = measures.has("boundary_power") ? 54 : 16;
     const padT = 22;
-    const padB = 26;
+    const padB = showPf ? 8 : 26;
     const plotW = Math.max(40, width - padL - padR);
     const plotH = Math.max(40, height - padT - padB);
     if (!list.length) return;
@@ -805,6 +831,8 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     });
     if (clock && Number(clock.day) >= d0 && Number(clock.day) <= d1) {
       const x = xDay(clock.day);
+      const failDay = Number(info?.first_failure?.day);
+      const onFailure = Number.isFinite(failDay) && Math.abs(Number(clock.day) - failDay) < 0.6;
       ctx.save();
       ctx.strokeStyle = "#0f5c56";
       ctx.lineWidth = 1.6;
@@ -815,9 +843,9 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.restore();
       ctx.fillStyle = "#0f5c56";
       ctx.font = "11px ui-monospace, monospace";
-      ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
-      ctx.fillText(sig3(clock.day), x, padT - 1);
+      ctx.textAlign = onFailure ? "right" : "center";
+      ctx.fillText(sig3(clock.day), onFailure ? x - 5 : x, padT - 1);
     }
     const marks = [
       info && info.fault_onset_day != null ? { day: Number(info.fault_onset_day), label: "onset", color: "#8a6d12", dash: [3, 3] } : null,
@@ -838,13 +866,15 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.restore();
       ctx.fillStyle = mark.color;
       ctx.font = "10px ui-monospace, monospace";
-      ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      let row = 0;
       const widthOf = ctx.measureText(mark.label).width;
-      while (placed.some((item) => item.row === row && Math.abs(item.x - x) < (item.w + widthOf) / 2 + 6)) row += 1;
-      placed.push({ row, x, w: widthOf });
-      ctx.fillText(mark.label, x, 1 + row * 11);
+      const roomRight = width - x - 6;
+      const labelX = roomRight >= widthOf ? x + 4 : x - 5;
+      ctx.textAlign = roomRight >= widthOf ? "left" : "right";
+      let row = 0;
+      while (placed.some((item) => item.row === row && Math.abs(item.x - labelX) < (item.w + widthOf) / 2 + 6)) row += 1;
+      placed.push({ row, x: labelX, w: widthOf });
+      ctx.fillText(mark.label, labelX, 1 + row * 11);
     });
     ctx.fillStyle = "#8a8276";
     ctx.font = "11px ui-monospace, monospace";
@@ -860,14 +890,197 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.fillText(multi ? value.toFixed(1) : sig3(value), padL + plotW + 6, y);
     });
     const ticks = dayTicks(d0, d1);
-    ctx.textBaseline = "alphabetic";
-    ctx.fillStyle = "#8a8276";
-    ticks.forEach((day, index) => {
-      const x = xDay(day);
-      ctx.textAlign = index === 0 ? "left" : index === ticks.length - 1 ? "right" : "center";
-      ctx.fillText(String(day), index === 0 ? padL : index === ticks.length - 1 ? padL + plotW : x, height - 6);
+    if (!showPf) {
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#8a8276";
+      ticks.forEach((day, index) => {
+        const x = xDay(day);
+        ctx.textAlign = index === 0 ? "left" : index === ticks.length - 1 ? "right" : "center";
+        ctx.fillText(String(day), index === 0 ? padL : index === ticks.length - 1 ? padL + plotW : x, height - 6);
+      });
+    }
+    plot.frame = { days, idx, d0, d1, xDay, yAt, prepared, padL, padR, plotW, plotH, ticks };
+    if (showPf) drawPf();
+  }
+
+  function damageValues(series) {
+    const raw = series?.row?.damage;
+    if (raw == null) return null;
+    const seq = Array.isArray(raw) && Array.isArray(raw[0]) ? raw[0] : raw;
+    if (!Array.isArray(seq)) return null;
+    return seq.map((value) => (value == null || value === "" ? null : Number(value)));
+  }
+
+  function conditionCurves() {
+    if (!plot) return [];
+    return plot.blocks.filter((block) => block.series).map((block) => {
+      const damage = damageValues(block.series);
+      return {
+        id: block.child.id,
+        name: labelOf(block.child),
+        color: colorFor(block.child.id),
+        days: block.series.day,
+        missing: damage == null,
+        values: damage ? damage.map((value) => (value == null ? null : 1 - value)) : null,
+      };
     });
-    plot.frame = { days, idx, d0, d1, xDay, yAt, prepared, padL, padT, plotW, plotH };
+  }
+
+  function predictorMarks(info) {
+    const alarms = info?.predictor_alarms_this_run;
+    const fail = Number(info?.first_failure?.day);
+    if (!alarms || !Number.isFinite(fail)) return [];
+    const singles = Object.entries(alarms).map(([name, row]) => {
+      const alarm = Number(row?.alarm);
+      if (!Number.isFinite(alarm)) return null;
+      return {
+        name,
+        short: name.replace(/^REDUCED_/, ""),
+        alarm,
+        interval: fail - alarm,
+      };
+    }).filter(Boolean).sort((a, b) => a.alarm - b.alarm);
+    const groups = [];
+    singles.forEach((mark) => {
+      const last = groups[groups.length - 1];
+      if (last && Math.abs(last.alarm - mark.alarm) < 1e-6) last.parts.push(mark);
+      else groups.push({ alarm: mark.alarm, parts: [mark] });
+    });
+    return groups.map((group) => ({
+      alarm: group.alarm,
+      parts: group.parts,
+      label: `${group.parts.map((part) => part.short).join(", ")} ${sig3(group.alarm)}`,
+    }));
+  }
+
+  function pfCaption(info, curves) {
+    if (!info) return "";
+    const missing = curves.filter((curve) => curve.missing).map((curve) => curve.name);
+    const absent = missing.length === 1
+      ? ` ${missing[0]} takes no damage in this run.`
+      : missing.length
+        ? ` ${missing.join(", ")} take no damage in this run.`
+        : "";
+    return `Condition is 1 minus the simulator's damage, ground truth the sensors cannot see.${absent} Each P is when that predictor alarmed in this ${info.scenario} run, seed ${info.seed}, not a detection threshold.`;
+  }
+
+  function drawPf() {
+    const frame = plot?.frame;
+    const info = plot?.info;
+    if (!frame || !info || !showPf) return;
+    const width = pfCanvas.clientWidth || canvas.clientWidth || 320;
+    const height = pfCanvas.clientHeight || 90;
+    const ratio = window.devicePixelRatio || 1;
+    pfCanvas.width = Math.round(width * ratio);
+    pfCanvas.height = Math.round(height * ratio);
+    const ctx = pfCanvas.getContext("2d");
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    const padL = frame.padL;
+    const padR = frame.padR;
+    const padT = 16;
+    const padB = 18;
+    const plotW = Math.max(40, width - padL - padR);
+    const plotH = Math.max(36, height - padT - padB);
+    const { d0, d1, days, idx } = frame;
+    const span = d1 - d0 || 1;
+    const xDay = (day) => padL + ((Number(day) - d0) / span) * plotW;
+    const yCond = (condition) => padT + (1 - Math.max(0, Math.min(1, condition))) * plotH;
+    const cursor = clock ? Number(clock.day) : d1;
+    const reveal = idx.filter((index) => !clock || Number(days[index]) <= cursor + 1e-6);
+    const curves = conditionCurves().filter((curve) => !curve.missing);
+    curves.forEach((curve) => {
+      const dim = highlight && highlight !== curve.id;
+      ctx.save();
+      ctx.strokeStyle = curve.color;
+      ctx.globalAlpha = dim ? 0.18 : 1;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      let started = false;
+      reveal.forEach((index) => {
+        const value = curve.days === days ? curve.values[index] : curve.values[nearest(curve.days, days[index])];
+        if (!Number.isFinite(value)) return;
+        const x = xDay(days[index]);
+        const y = yCond(value);
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      ctx.restore();
+    });
+    ctx.fillStyle = "#8a8276";
+    ctx.font = "11px ui-monospace, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    [1, 0.5, 0].forEach((value) => {
+      ctx.fillText(value === 0.5 ? "0.5" : String(value), padL - 6, yCond(value));
+    });
+    const lead = curves.slice().sort((a, b) => {
+      const last = (curve) => {
+        const index = reveal.length ? reveal[reveal.length - 1] : 0;
+        const value = curve.values[index];
+        return Number.isFinite(value) ? value : 1;
+      };
+      return last(a) - last(b);
+    })[0];
+    const yOnLead = (day) => {
+      if (!lead) return yCond(1);
+      const value = lead.values[nearest(lead.days, day)];
+      return yCond(Number.isFinite(value) ? value : 1);
+    };
+    if (info.fault_onset_day != null && Number(info.fault_onset_day) >= d0 && Number(info.fault_onset_day) <= d1 && Number(info.fault_onset_day) <= cursor + 1e-6) {
+      const x = xDay(info.fault_onset_day);
+      ctx.save();
+      ctx.strokeStyle = "#8a6d12";
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+      ctx.restore();
+    }
+    const failDay = Number(info.first_failure?.day);
+    if (Number.isFinite(failDay) && failDay >= d0 && failDay <= d1 && failDay <= cursor + 1e-6) {
+      const x = xDay(failDay);
+      ctx.save();
+      ctx.strokeStyle = "#9f1239";
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, padT + plotH);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = "#9f1239";
+      ctx.font = "11px ui-monospace, monospace";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillText(`F ${sig3(failDay)}`, x - 4, padT);
+    }
+    const placed = [];
+    predictorMarks(info).forEach((mark) => {
+      if (mark.alarm < d0 || mark.alarm > d1 || mark.alarm > cursor + 1e-6) return;
+      const x = xDay(mark.alarm);
+      const y = yOnLead(mark.alarm);
+      ctx.fillStyle = "#1c1915";
+      ctx.beginPath();
+      ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = "10px ui-monospace, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(mark.label, x, y - 6);
+    });
+    ctx.fillStyle = "#8a8276";
+    ctx.font = "11px ui-monospace, monospace";
+    ctx.textBaseline = "alphabetic";
+    frame.ticks.forEach((day, index, all) => {
+      const x = xDay(day);
+      ctx.textAlign = index === 0 ? "left" : index === all.length - 1 ? "right" : "center";
+      ctx.fillText(String(day), index === 0 ? padL : index === all.length - 1 ? padL + plotW : x, height - 3);
+    });
+    const curvesAll = conditionCurves();
+    pfNote.hidden = false;
+    pfNote.textContent = pfCaption(info, curvesAll);
+    plot.pf = { d0, d1, xDay, yCond, padL, plotW, curves: curvesAll, lead };
   }
 
   function dayTicks(d0, d1) {
@@ -906,6 +1119,35 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     readout.style.left = `${Math.max(8, left)}px`;
     readout.style.top = "28px";
   }
+
+  function onPfHover(event) {
+    if (!plot?.pf || !showPf) { pfReadout.hidden = true; return; }
+    const rect = pfCanvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const pf = plot.pf;
+    if (x < pf.padL || x > pf.padL + pf.plotW) { pfReadout.hidden = true; return; }
+    const day = pf.d0 + ((x - pf.padL) / pf.plotW) * (pf.d1 - pf.d0);
+    const info = plot.info;
+    const fail = Number(info?.first_failure?.day);
+    const lines = pf.curves.filter((curve) => !curve.missing && (!highlight || highlight === curve.id)).map((curve) => {
+      const value = curve.values[nearest(curve.days, day)];
+      return `<div><i style="background:${curve.color}"></i>${esc(curve.name)} <b>${esc(sig3(value))}</b></div>`;
+    });
+    const near = predictorMarks(info).find((mark) => Math.abs(pf.xDay(mark.alarm) - x) < 10 && mark.alarm <= (clock ? Number(clock.day) : mark.alarm) + 1e-6);
+    const extra = near
+      ? near.parts.map((part) => `<div>${esc(part.name)} day ${esc(sig3(part.alarm))}, P–F ${esc(sig3(part.interval))} days</div>`).join("")
+      : "";
+    const failure = Number.isFinite(fail) && Math.abs(pf.xDay(fail) - x) < 8
+      ? `<div>F ${esc(info.first_failure.asset)}, day ${esc(sig3(fail))}</div>`
+      : "";
+    pfReadout.hidden = false;
+    pfReadout.innerHTML = `<b>day ${esc(sig3(day))}</b>${lines.join("")}${extra}${failure}`;
+    pfReadout.style.left = `${Math.max(8, Math.min(rect.width - 230, x + 12))}px`;
+    pfReadout.style.top = "8px";
+  }
+
+  pfCanvas.addEventListener("mousemove", onPfHover);
+  pfCanvas.addEventListener("mouseleave", () => { pfReadout.hidden = true; });
 
   if (clock) {
     clock.subscribe(() => {
