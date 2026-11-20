@@ -1,4 +1,4 @@
-import { DOMAIN, domainLabel, esc, labelOf, mountEnvelopeNav, siblingEdges } from "./envelope-nav.js";
+import { DOMAIN, domainLabel, esc, labelOf, mountEnvelopeNav, siblingEdges } from "./envelope-nav.js?v=20261120";
 
 const root = document.getElementById("explorer");
 root.innerHTML = `

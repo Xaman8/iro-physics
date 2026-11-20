@@ -1,4 +1,4 @@
-import { sig3 } from "./format.js";
+import { sig3 } from "./format.js?v=20261120";
 
 const DOMAIN = {
   mechanical: "#1f7a4d",

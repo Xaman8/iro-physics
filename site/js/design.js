@@ -1,4 +1,4 @@
-import { sig3 } from "./format.js";
+import { sig3 } from "./format.js?v=20261120";
 
 const [plant, v2] = await Promise.all([
   fetch("data/v2-plant.json").then((r) => r.json()),

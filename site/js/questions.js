@@ -1,4 +1,4 @@
-import { renderMarkdown } from "./markdown.js";
+import { renderMarkdown } from "./markdown.js?v=20261120";
 
 const md = await fetch("content/research-questions.md").then((r) => r.text());
 const statusRe = /PARTLY ANSWERED|IN PROGRESS|NOT YET TESTED|ANSWERED|DROPPED|ONGOING|OPEN/g;

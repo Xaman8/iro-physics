@@ -1,4 +1,4 @@
-import { compact, dayIndex } from "./format.js";
+import { compact, dayIndex } from "./format.js?v=20261120";
 
 const BRIGHT = {
   mechanical: "#7dffaf",
