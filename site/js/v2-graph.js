@@ -1,4 +1,4 @@
-import { sig3 } from "./format.js";
+import { sig3 } from "./format.js?v=20261120";
 
 const PALETTE = {
   Supply: { fill: "#f4e7c4", stroke: "#8a6a22", ink: "#6b5010" },

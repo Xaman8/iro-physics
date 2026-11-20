@@ -1,8 +1,8 @@
-import { Clock } from "./clock.js";
-import { mountPhysics } from "./physics-view.js";
-import { mountBoard } from "./envelope-board.js";
-import { mountV2 } from "./v2-graph.js";
-import { text } from "./format.js";
+import { Clock } from "./clock.js?v=20261120";
+import { mountPhysics } from "./physics-view.js?v=20261120";
+import { mountBoard } from "./envelope-board.js?v=20261120";
+import { mountV2 } from "./v2-graph.js?v=20261120";
+import { text } from "./format.js?v=20261120";
 
 const [plant, scenario] = await Promise.all([
   fetch("data/plant.json").then((r) => r.json()),

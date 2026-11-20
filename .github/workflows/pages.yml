@@ -34,6 +34,7 @@ jobs:
             cp -a paper/*.pdf _site/paper/
           fi
           touch _site/.nojekyll
+          python3 tools/stamp_assets.py _site "${GITHUB_SHA}"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

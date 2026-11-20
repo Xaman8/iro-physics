@@ -1,4 +1,4 @@
-import { text } from "./format.js";
+import { text } from "./format.js?v=20261120";
 
 const data = await fetch("data/captions.json").then((r) => r.json());
 const root = document.getElementById("story");
