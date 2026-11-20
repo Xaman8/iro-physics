@@ -119,26 +119,30 @@ export function mountBoard(root, { clock, onSpan } = {}) {
         <div class="nav-tree" data-nav-tree></div>
       </aside>
       <div class="board-main">
-        <p class="ex-note" data-notice>This is a made-up toy plant, not real plant data. The charts are for display only.</p>
-        <p class="ex-note" data-caveat>In this v1 toy the limit is entropic endurance; the study now keeps entropy generation as a balance check and tracks damage per mechanism (RQ10).</p>
         <nav class="crumbs" data-crumbs aria-label="Envelope path"></nav>
         <div class="board-top">
           <div class="port-row" data-ports></div>
-          <p class="ex-note port-note" data-port></p>
           <div class="diagram" data-diagram></div>
         </div>
         <div class="filters" data-filters></div>
-        <p class="ex-note" data-chart-note></p>
         <p class="now-read" data-now></p>
         <div class="axis-labels"><span data-axis-left></span><span data-axis-right></span></div>
         <div class="chart-stage">
           <canvas data-chart></canvas>
           <div class="readout" data-readout hidden></div>
         </div>
-        <p class="scale-note" data-scale-note></p>
         <ul class="trace-legend" data-legend></ul>
-        <p class="sigma-check">σ is shown as an energy-balance check, not a damage measure.</p>
-        <p class="plant-sigma" data-plant-caption hidden></p>
+        <details class="board-notes">
+          <summary>Notes</summary>
+          <p class="ex-note" data-notice>This is a made-up toy plant, not real plant data. The charts are for display only.</p>
+          <p class="ex-note" data-caveat>In this v1 toy the limit is entropic endurance; the study now keeps entropy generation as a balance check and tracks damage per mechanism (RQ10).</p>
+          <p class="ex-note" data-chart-note></p>
+          <p class="ex-note port-note" data-port></p>
+          <p class="scale-note" data-scale-note></p>
+          <p class="ex-note">Chemical is labelled chemical (v3 port not physical): the v3 chemical port is not a physical species balance.</p>
+          <p class="sigma-check">σ is shown as an energy-balance check, not a damage measure.</p>
+          <p class="plant-sigma" data-plant-caption hidden></p>
+        </details>
       </div>
     </div>`;
 
@@ -460,7 +464,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   function renderPorts() {
     const ports = portsOf(node(parentId)).filter((entry) => domainsOn.has(entry.domain));
     portsEl.innerHTML = ports.map((entry) =>
-      `<button type="button" class="port-chip" data-port-detail="${esc(entry.detail)}" title="${esc(entry.detail)}"><i style="background:${DOMAIN[entry.domain] || "#888"}"></i>${esc(entry.name)}</button>`
+      `<button type="button" class="port-dot" data-port-detail="${esc(entry.detail)}" title="${esc(entry.detail)}" aria-label="${esc(entry.detail)}"><i style="background:${DOMAIN[entry.domain] || "#888"}"></i></button>`
     ).join("");
   }
 
@@ -496,14 +500,14 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       return;
     }
     const width = 860;
-    const height = 210;
-    const boxW = Math.min(148, Math.max(78, (width - 48) / children.length - 18));
-    const boxH = 48;
-    const span = width - 36 - boxW;
+    const height = 320;
+    const boxW = Math.min(210, Math.max(128, (width - 40) / children.length - 28));
+    const boxH = 78;
+    const span = width - 24 - boxW;
     const boxes = {};
     children.forEach((child, index) => {
-      const x = 18 + (children.length === 1 ? (width - boxW) / 2 : (span * index) / (children.length - 1));
-      boxes[child.id] = { x, y: 118, w: boxW, h: boxH, child, index };
+      const x = 12 + (children.length === 1 ? (width - boxW) / 2 : (span * index) / Math.max(1, children.length - 1));
+      boxes[child.id] = { x, y: 210, w: boxW, h: boxH, child, index };
     });
     const groups = new Map();
     edges.forEach((edge) => {
@@ -523,7 +527,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
         const y2 = b.y;
         const shift = (index - (list.length - 1) / 2) * 7;
         const mid = (x1 + x2) / 2 + shift;
-        const lift = 78 - Math.min(46, Math.abs(x2 - x1) * 0.08);
+        const lift = 118 - Math.min(70, Math.abs(x2 - x1) * 0.12);
         const pa = liveValue(edge.a, "boundary_power");
         const pb = liveValue(edge.b, "boundary_power");
         const flow = pa != null && pb != null ? (Math.abs(pa) + Math.abs(pb)) / 2 : null;
@@ -541,7 +545,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       const fill = level ? `rgba(15,92,86,${(0.1 + 0.55 * level).toFixed(3)})` : (on ? "#e5f2f0" : "#fff");
       return `<g data-child="${esc(child.id)}" tabindex="0" role="button" aria-pressed="${on ? "true" : "false"}">
         <rect x="${box.x.toFixed(1)}" y="${box.y}" width="${box.w}" height="${box.h}" rx="10" fill="${fill}" stroke="${on ? "#0f5c56" : "#e0d8cb"}" stroke-width="${on ? 2.4 : 1}"></rect>
-        <text x="${(box.x + box.w / 2).toFixed(1)}" y="${box.y + 29}" text-anchor="middle" font-size="13" font-weight="650" fill="#1c1915">${esc(labelOf(child))}</text>
+        <text x="${(box.x + box.w / 2).toFixed(1)}" y="${box.y + 46}" text-anchor="middle" font-size="18" font-weight="700" fill="#1c1915">${esc(labelOf(child))}</text>
         <title>${esc(child.name)}</title>
       </g>`;
     }).join("");
@@ -564,15 +568,14 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       `<button type="button" class="chip-btn" data-order="${index}" aria-pressed="${orders.has(index) ? "true" : "false"}">${orderTitle(meta, index)}</button>`
     ).join("");
     const domainChips = Object.keys(DOMAIN).map((name) =>
-      `<button type="button" class="chip-btn" data-domain="${name}" aria-pressed="${domainsOn.has(name) ? "true" : "false"}"><i style="background:${DOMAIN[name]}"></i>${esc(domainLabel(name))}</button>`
+      `<button type="button" class="chip-btn" data-domain="${name}" aria-pressed="${domainsOn.has(name) ? "true" : "false"}" title="${esc(domainLabel(name))}"><i style="background:${DOMAIN[name]}"></i>${esc(name)}</button>`
     ).join("");
     const windows = `
       <button type="button" class="chip-btn" data-win="fault" aria-pressed="${windowMode === "fault" ? "true" : "false"}">Onset to failure</button>
       <button type="button" class="chip-btn" data-win="all" aria-pressed="${windowMode === "all" ? "true" : "false"}">All days</button>`;
     filtersEl.innerHTML = `
-      <div class="filter-row"><span>Children</span><div>${childChips}</div></div>
-      <div class="filter-row"><span>Measure</span><div>${measureChips}</div><span>Order</span><div>${orderChips}</div></div>
-      <div class="filter-row"><span>Domain</span><div>${domainChips}</div><span>Days</span><div>${windows}</div></div>`;
+      <div class="filter-row"><span>Children</span><div>${childChips}</div><span>Days</span><div>${windows}</div></div>
+      <div class="filter-row"><span>Show</span><div>${measureChips}${orderChips}</div><span>Domain</span><div>${domainChips}</div></div>`;
   }
 
   function indicesFor(days) {

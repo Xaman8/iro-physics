@@ -140,8 +140,8 @@ h1 {
 .sigma-check { margin: 4px 0 8px; color: var(--muted); font-size: 12.5px; }
 .plant-sigma { margin: 0 0 10px; color: var(--muted); font-size: 13px; max-width: 88ch; }
 
-.board-root { height: 100%; min-height: 0; }
-.board { display: flex; height: 100%; min-height: 0; }
+.board-root { height: auto; min-height: 0; }
+.board { display: flex; height: auto; min-height: 0; align-items: flex-start; }
 .board-nav {
   width: 214px;
   flex: none;
@@ -152,7 +152,8 @@ h1 {
 }
 .board-nav .seg { margin-bottom: 8px; flex-wrap: wrap; align-items: flex-start; }
 .board-nav .btn { padding: 5px 8px; font-size: 13px; }
-.diagram svg { width: 100%; height: 120px; display: block; }
+.diagram { flex: 1; min-height: 0; }
+.diagram svg { width: 100%; height: 100%; display: block; }
 .nav-list { list-style: none; margin: 0; padding: 0 0 0 12px; }
 .nav-list > li { margin: 1px 0; }
 .nav-pick, .twist {
@@ -167,9 +168,9 @@ h1 {
 .nav-pick { text-align: left; padding: 2px 4px; border-radius: 6px; font-size: 13px; }
 .nav-pick[aria-current="true"] { background: var(--teal-soft); color: var(--teal); font-weight: 700; }
 .board-main {
-  flex: 1; min-width: 0; min-height: 0; overflow: auto;
+  flex: 1; min-width: 0; min-height: 0; overflow: visible;
   display: flex; flex-direction: column;
-  padding: 8px 12px 12px;
+  padding: 6px 12px 8px;
 }
 .now-read { margin: 0 0 4px; font-family: var(--mono); font-size: 13px; color: var(--ink); min-height: 1.2em; }
 .board-main .ex-note { margin: 4px 0 8px; font-size: 13px; }
@@ -177,8 +178,18 @@ h1 {
 .crumbs button { border: 0; background: transparent; font: inherit; color: var(--teal); cursor: pointer; padding: 0; }
 .crumbs button[aria-current="page"] { color: var(--ink); font-weight: 700; cursor: default; }
 .crumbs span { color: var(--faint); }
-.board-top { border: 1px solid var(--line); border-radius: 12px; background: #fff; padding: 8px 8px 0; margin-bottom: 8px; }
-.port-row { display: flex; flex-wrap: wrap; gap: 4px 8px; min-height: 18px; }
+.board-top {
+  height: 30vh; min-height: 200px;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  padding: 6px 8px 4px; margin-bottom: 6px;
+}
+.port-row { display: flex; flex-wrap: nowrap; gap: 6px; overflow-x: auto; height: 22px; flex: none; }
+.port-dot {
+  width: 16px; height: 16px; border: 0; border-radius: 50%; padding: 0;
+  background: transparent; cursor: pointer; flex: none;
+}
+.port-dot i { width: 12px; height: 12px; border-radius: 50%; display: block; }
 .port-chip, .chip-btn {
   display: inline-flex; align-items: center; gap: 4px;
   border: 1px solid var(--line); background: #fff; color: var(--ink);
@@ -190,12 +201,12 @@ h1 {
 .port-note { min-height: 0; margin: 4px 0; }
 .port-note:empty { display: none; }
 .diagram g { cursor: pointer; }
-.filters { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
-.filter-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
-.filter-row > span { font-size: 11px; color: var(--faint); min-width: 62px; }
-.filter-row > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.filters { display: flex; flex-direction: column; gap: 4px; margin: 4px 0; flex: none; }
+.filter-row { display: flex; flex-wrap: nowrap; gap: 6px 8px; align-items: center; overflow-x: auto; }
+.filter-row > span { font-size: 11px; color: var(--faint); flex: none; }
+.filter-row > div { display: flex; flex-wrap: nowrap; gap: 4px; }
 .axis-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-weight: 650; }
-.chart-stage { position: relative; flex: 1 1 180px; min-height: 160px; height: auto; }
+.chart-stage { position: relative; flex: none; height: 45vh; min-height: 360px; }
 .chart-stage canvas { width: 100%; height: 100%; display: block; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 .readout {
   position: absolute; z-index: 2; max-width: 240px;
@@ -208,7 +219,10 @@ h1 {
 .readout i { width: 8px; height: 8px; border-radius: 50%; display: block; flex: none; }
 .scale-note { margin: 4px 0; color: var(--muted); font-size: 12.5px; }
 .scale-note:empty { display: none; }
-.trace-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 6px 0; padding: 0; }
+.trace-legend { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 4px 0 2px; padding: 0; flex: none; }
+.board-notes { margin: 4px 0 8px; flex: none; }
+.board-notes summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+.board-notes .ex-note { margin: 6px 0; }
 .trace-legend button { border: 0; background: transparent; font: inherit; font-size: 12.5px; color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .trace-legend button[aria-pressed="true"] { font-weight: 700; }
 .trace-legend i { width: 10px; height: 10px; border-radius: 50%; display: block; }
@@ -225,18 +239,19 @@ h1 {
   .board-nav.open { transform: none; }
   .nav-backdrop { display: block; position: fixed; inset: 0; background: rgba(28, 25, 21, 0.28); z-index: 25; }
   .nav-backdrop[hidden] { display: none; }
-  .chart-stage { height: 240px; }
+  .chart-stage { height: 45vh; min-height: 280px; }
+  .board-top { height: 30vh; min-height: 180px; }
 }
 .bench-column {
-  flex: 1;
+  flex: none;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: visible;
   padding: 10px;
   gap: 10px;
 }
-.envelope-stage { flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.envelope-stage { flex: none; min-height: 0; overflow: visible; height: auto; }
 .francis-fold {
   flex: none;
   background: #14161d;
@@ -253,7 +268,7 @@ h1 {
 .francis-body { height: 680px; }
 .francis-body .physics { height: 100%; }
 @media (max-width: 1100px) {
-  #envelope .board { height: 100%; min-height: 0; }
+  #envelope .board { height: auto; min-height: 0; }
 }
 .pane .nest-root { height: 100%; overflow: auto; padding: 10px 12px 28px; }
 @media (min-width: 1100px) {
@@ -458,7 +473,7 @@ figure.plate p { margin: 0; color: var(--muted); max-width: 78ch; }
 }
 
 /* Bench */
-body.app { height: 100vh; overflow: hidden; display: flex; flex-direction: column; background: #ebe6dc; }
+body.app { min-height: 100vh; height: auto; overflow: visible; display: flex; flex-direction: column; background: #ebe6dc; }
 body.app .top { flex: none; }
 .bench-bar {
   flex: none;
@@ -496,6 +511,7 @@ body.app .top { flex: none; }
   overflow: hidden;
 }
 .pane-scroll { overflow: auto; display: flex; flex-direction: column; height: 100%; }
+.envelope-stage.pane { overflow: visible; height: auto; flex: none; }
 
 .physics {
   background: #14161d;
@@ -720,7 +736,7 @@ body.app .top { flex: none; }
 .asset { cursor: pointer; }
 
 @media (max-width: 1100px) {
-  body.app { height: 100dvh; overflow: hidden; }
+  body.app { height: auto; min-height: 100vh; overflow: visible; }
   .split { flex-direction: column; overflow: auto; }
   .pane { flex: none; min-height: 0; }
   .env-stage { min-height: 280px; height: auto; }
