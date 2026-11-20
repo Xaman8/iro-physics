@@ -831,6 +831,8 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     });
     if (clock && Number(clock.day) >= d0 && Number(clock.day) <= d1) {
       const x = xDay(clock.day);
+      const failDay = Number(info?.first_failure?.day);
+      const onFailure = Number.isFinite(failDay) && Math.abs(Number(clock.day) - failDay) < 0.6;
       ctx.save();
       ctx.strokeStyle = "#0f5c56";
       ctx.lineWidth = 1.6;
@@ -841,9 +843,9 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.restore();
       ctx.fillStyle = "#0f5c56";
       ctx.font = "11px ui-monospace, monospace";
-      ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
-      ctx.fillText(sig3(clock.day), x, padT - 1);
+      ctx.textAlign = onFailure ? "right" : "center";
+      ctx.fillText(sig3(clock.day), onFailure ? x - 5 : x, padT - 1);
     }
     const marks = [
       info && info.fault_onset_day != null ? { day: Number(info.fault_onset_day), label: "onset", color: "#8a6d12", dash: [3, 3] } : null,
@@ -864,13 +866,15 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.restore();
       ctx.fillStyle = mark.color;
       ctx.font = "10px ui-monospace, monospace";
-      ctx.textAlign = "center";
       ctx.textBaseline = "top";
-      let row = 0;
       const widthOf = ctx.measureText(mark.label).width;
-      while (placed.some((item) => item.row === row && Math.abs(item.x - x) < (item.w + widthOf) / 2 + 6)) row += 1;
-      placed.push({ row, x, w: widthOf });
-      ctx.fillText(mark.label, x, 1 + row * 11);
+      const roomRight = width - x - 6;
+      const labelX = roomRight >= widthOf ? x + 4 : x - 5;
+      ctx.textAlign = roomRight >= widthOf ? "left" : "right";
+      let row = 0;
+      while (placed.some((item) => item.row === row && Math.abs(item.x - labelX) < (item.w + widthOf) / 2 + 6)) row += 1;
+      placed.push({ row, x: labelX, w: widthOf });
+      ctx.fillText(mark.label, labelX, 1 + row * 11);
     });
     ctx.fillStyle = "#8a8276";
     ctx.font = "11px ui-monospace, monospace";
@@ -926,7 +930,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     const alarms = info?.predictor_alarms_this_run;
     const fail = Number(info?.first_failure?.day);
     if (!alarms || !Number.isFinite(fail)) return [];
-    return Object.entries(alarms).map(([name, row]) => {
+    const singles = Object.entries(alarms).map(([name, row]) => {
       const alarm = Number(row?.alarm);
       if (!Number.isFinite(alarm)) return null;
       return {
@@ -936,6 +940,17 @@ export function mountBoard(root, { clock, onSpan } = {}) {
         interval: fail - alarm,
       };
     }).filter(Boolean).sort((a, b) => a.alarm - b.alarm);
+    const groups = [];
+    singles.forEach((mark) => {
+      const last = groups[groups.length - 1];
+      if (last && Math.abs(last.alarm - mark.alarm) < 1e-6) last.parts.push(mark);
+      else groups.push({ alarm: mark.alarm, parts: [mark] });
+    });
+    return groups.map((group) => ({
+      alarm: group.alarm,
+      parts: group.parts,
+      label: `${group.parts.map((part) => part.short).join(", ")} ${sig3(group.alarm)}`,
+    }));
   }
 
   function pfCaption(info, curves) {
@@ -1036,9 +1051,9 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.restore();
       ctx.fillStyle = "#9f1239";
       ctx.font = "11px ui-monospace, monospace";
-      ctx.textAlign = "left";
+      ctx.textAlign = "right";
       ctx.textBaseline = "top";
-      ctx.fillText("F", Math.min(width - 14, x + 3), padT);
+      ctx.fillText(`F ${sig3(failDay)}`, x - 4, padT);
     }
     const placed = [];
     predictorMarks(info).forEach((mark) => {
@@ -1049,16 +1064,10 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       ctx.beginPath();
       ctx.arc(x, y, 3.2, 0, Math.PI * 2);
       ctx.fill();
-      const label = `${mark.short} ${sig3(mark.alarm)}`;
       ctx.font = "10px ui-monospace, monospace";
-      const textW = ctx.measureText(label).width;
-      let row = 0;
-      while (placed.some((item) => Math.abs(item.x - x) < (item.w + textW) / 2 + 6 && item.row === row)) row += 1;
-      const shift = row === 0 ? 0 : (row % 2 === 1 ? textW / 2 + 8 : -(textW / 2 + 8));
-      placed.push({ row, x: x + shift, w: textW });
       ctx.textAlign = "center";
       ctx.textBaseline = "bottom";
-      ctx.fillText(label, x + shift, y - 6);
+      ctx.fillText(mark.label, x, y - 6);
     });
     ctx.fillStyle = "#8a8276";
     ctx.font = "11px ui-monospace, monospace";
@@ -1126,7 +1135,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     });
     const near = predictorMarks(info).find((mark) => Math.abs(pf.xDay(mark.alarm) - x) < 10 && mark.alarm <= (clock ? Number(clock.day) : mark.alarm) + 1e-6);
     const extra = near
-      ? `<div>${esc(near.name)} day ${esc(sig3(near.alarm))}, P–F ${esc(sig3(near.interval))} days</div>`
+      ? near.parts.map((part) => `<div>${esc(part.name)} day ${esc(sig3(part.alarm))}, P–F ${esc(sig3(part.interval))} days</div>`).join("")
       : "";
     const failure = Number.isFinite(fail) && Math.abs(pf.xDay(fail) - x) < 8
       ? `<div>F ${esc(info.first_failure.asset)}, day ${esc(sig3(fail))}</div>`
