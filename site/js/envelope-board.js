@@ -1,20 +1,9 @@
 import { sig3 } from "./format.js";
-
-const DOMAIN = {
-  mechanical: "#1f7a4d",
-  fluid: "#1a6fa8",
-  thermal: "#c45c26",
-  electrical: "#8a6d12",
-  chemical: "#6b3fa0",
-};
+import { DOMAIN, domainLabel, esc, siblingEdges, mountEnvelopeNav } from "./envelope-nav.js";
 
 const CHILD_COLOR = ["#0f5c56", "#1a6fa8", "#c45c26", "#6b3fa0", "#8a6d12", "#9f1239", "#1f6b3a"];
 
 const ORDER_NAME = ["value", "rate", "acceleration", "jerk"];
-
-function domainLabel(name) {
-  return name === "chemical" ? "chemical (v3 port not physical)" : name;
-}
 
 function baseUnit(text) {
   const match = String(text || "").match(/kW\/K|\bMW\b|\bkW\b|\bpu\b/);
@@ -82,12 +71,6 @@ function lagNote(info) {
   return bits.length ? `Causal trailing windows; stated lag ${bits.join(", ")}.` : "";
 }
 
-function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
-  }[ch]));
-}
-
 function shortPort(name) {
   const clean = String(name || "").replace(/\s*\([^)]*\)/g, "").trim();
   const words = clean.split(/\s+/).filter(Boolean);
@@ -111,13 +94,7 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     <div class="board">
       <button type="button" class="nav-toggle" data-nav-toggle aria-expanded="false">Envelopes</button>
       <div class="nav-backdrop" data-nav-close hidden></div>
-      <aside class="board-nav" data-nav>
-        <div class="seg" role="group" aria-label="Hierarchy">
-          <button type="button" class="btn" data-tree="designed" aria-pressed="true">Designed</button>
-          <button type="button" class="btn" data-tree="discovered" aria-pressed="false">Discovered</button>
-        </div>
-        <div class="nav-tree" data-nav-tree></div>
-      </aside>
+      <aside class="board-nav" data-nav></aside>
       <div class="board-main">
         <nav class="crumbs" data-crumbs aria-label="Envelope path"></nav>
         <div class="board-top">
@@ -154,7 +131,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
       </div>
     </div>`;
 
-  const treeEl = root.querySelector("[data-nav-tree]");
   const crumbsEl = root.querySelector("[data-crumbs]");
   const portsEl = root.querySelector("[data-ports]");
   const portNote = root.querySelector("[data-port]");
@@ -183,7 +159,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   let windowMode = "fault";
   let parentId = "PLANT";
   let highlight = null;
-  const expanded = new Set(["PLANT"]);
   const shown = new Set();
   const measures = new Set(["sigma", "boundary_power"]);
   const orders = new Set([0]);
@@ -253,10 +228,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   function byId() { return pack().byId; }
   function node(id) { return byId()[id]; }
 
-  function envelopeKids(id) {
-    return (node(id).children || []).filter((child) => node(child).kind !== "asset");
-  }
-
   function ancestors(id) {
     const path = [];
     let current = node(id);
@@ -277,11 +248,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   backdrop.addEventListener("click", () => setNavOpen(false));
 
   root.addEventListener("click", (event) => {
-    const treeBtn = event.target.closest("[data-tree]");
-    if (treeBtn && treeBtn.closest("[data-nav]")) {
-      setMode(treeBtn.dataset.tree);
-      return;
-    }
     const winBtn = event.target.closest("[data-win]");
     if (winBtn) { setWindow(winBtn.dataset.win); return; }
     const childChip = event.target.closest("[data-child-filter]");
@@ -296,22 +262,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     if (pfBtn && pfBtn.hasAttribute("data-pf")) { setPf(!showPf); return; }
     const crumb = event.target.closest("[data-crumb]");
     if (crumb) { selectParent(crumb.dataset.crumb); }
-  });
-
-  treeEl.addEventListener("click", (event) => {
-    const twist = event.target.closest("[data-twist]");
-    if (twist) {
-      const id = twist.dataset.twist;
-      if (expanded.has(id)) expanded.delete(id);
-      else expanded.add(id);
-      renderTree();
-      return;
-    }
-    const pick = event.target.closest("[data-pick]");
-    if (pick) {
-      selectParent(pick.dataset.pick);
-      if (window.matchMedia("(max-width: 800px)").matches) setNavOpen(false);
-    }
   });
 
   let childClick = null;
@@ -383,15 +333,15 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     paint();
   }
 
-  function selectParent(id) {
+  function selectParent(id, fromNav) {
     parentId = id;
     highlight = null;
-    ancestors(id).forEach((item) => { if (item.kind !== "asset") expanded.add(item.id); });
     const kids = node(id).children || [];
     shown.clear();
     kids.forEach((child) => shown.add(child));
     portNote.textContent = "";
-    renderTree();
+    if (!fromNav) navCtl.select(id, { silent: true });
+    if (window.matchMedia("(max-width: 800px)").matches) setNavOpen(false);
     renderCrumbs();
     renderPorts();
     renderDiagram();
@@ -399,34 +349,10 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     paint();
   }
 
-  async function setMode(next) {
-    mode = next;
-    root.querySelectorAll("[data-nav] [data-tree]").forEach((button) => {
-      button.setAttribute("aria-pressed", String(button.dataset.tree === mode));
-    });
-    expanded.clear();
-    expanded.add("PLANT");
-    await ensurePack();
-    selectParent("PLANT");
-  }
-
   function setWindow(next) {
     windowMode = next;
     renderFilters();
     paint();
-  }
-
-  async function ensurePack() {
-    if (packs[mode]) return;
-    const file = mode === "designed" ? "data/v3/hierarchy.json" : "data/v3/hierarchy_discovered.json";
-    const data = await fetch(file).then((response) => response.json());
-    packs[mode] = {
-      byId: Object.fromEntries(data.nodes.map((item) => [item.id, item])),
-      boundary: data.plant_boundary || [],
-    };
-    if (data.meta && data.meta.made_up_plant) {
-      notice.textContent = "This is a made-up toy plant, not real plant data. The charts are for display only.";
-    }
   }
 
   async function ensureCouplings() {
@@ -442,22 +368,6 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     meta = data.meta;
     if (!data.nodes[item.id]) return null;
     return { day: data.day, row: data.nodes[item.id], meta: data.meta };
-  }
-
-  function renderTree() {
-    treeEl.innerHTML = `<ul class="nav-list">${renderBranch("PLANT")}</ul>`;
-  }
-
-  function renderBranch(id) {
-    const item = node(id);
-    const kids = envelopeKids(id);
-    const open = expanded.has(id) && kids.length;
-    const current = id === parentId;
-    const twist = kids.length
-      ? `<button type="button" class="twist" data-twist="${esc(id)}" aria-expanded="${open ? "true" : "false"}" aria-label="${open ? "Collapse" : "Expand"} ${esc(labelOf(item))}">${open ? "▾" : "▸"}</button>`
-      : `<span class="twist leaf"></span>`;
-    const nested = open ? `<ul class="nav-list">${kids.map((child) => renderBranch(child)).join("")}</ul>` : "";
-    return `<li>${twist}<button type="button" class="nav-pick" data-pick="${esc(id)}" aria-current="${current ? "true" : "false"}" title="${esc(item.name)}">${esc(labelOf(item))}</button>${nested}</li>`;
   }
 
   function labelOf(item) {
@@ -495,26 +405,11 @@ export function mountBoard(root, { clock, onSpan } = {}) {
   }
 
   function edgesFor(item) {
-    const listed = couplings && couplings.sibling_edges && couplings.sibling_edges[item.id];
-    if (Array.isArray(listed) && listed.length) {
-      return listed.map((edge) => ({ a: edge.a, b: edge.b, domain: edge.domain }));
-    }
-    const kids = new Set(item.children || []);
-    const seen = new Set();
-    const edges = [];
-    for (const id of item.children || []) {
-      const child = node(id);
-      for (const port of child.boundary_ports || []) {
-        for (const far of port.coupled_to || []) {
-          if (!kids.has(far.other_node)) continue;
-          const key = `${[id, far.other_node].sort().join("|")}|${port.domain}`;
-          if (seen.has(key)) continue;
-          seen.add(key);
-          edges.push({ a: id, b: far.other_node, domain: port.domain });
-        }
-      }
-    }
-    return edges;
+    return siblingEdges(item, byId(), couplings).map((edge) => ({
+      a: edge.a,
+      b: edge.b,
+      domain: edge.domain,
+    }));
   }
 
   function renderDiagram() {
@@ -1163,5 +1058,16 @@ export function mountBoard(root, { clock, onSpan } = {}) {
     });
   }
 
-  ensureCouplings().then(() => ensurePack()).then(() => selectParent("PLANT"));
+  const navCtl = mountEnvelopeNav(nav, {
+    showAssets: false,
+    onSelect(id, snap) {
+      mode = snap.mode;
+      packs[snap.mode] = { byId: snap.byId, boundary: snap.boundary };
+      if (snap.meta?.made_up_plant) {
+        notice.textContent = "This is a made-up toy plant, not real plant data. The charts are for display only.";
+      }
+      selectParent(id, true);
+    },
+  });
+  ensureCouplings().then(() => navCtl.start());
 }
