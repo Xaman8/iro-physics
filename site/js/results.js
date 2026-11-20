@@ -1,4 +1,4 @@
-import { text } from "./format.js";
+import { text } from "./format.js?v=20261120";
 
 const [data, v2] = await Promise.all([
   fetch("data/results.json").then((r) => r.json()),

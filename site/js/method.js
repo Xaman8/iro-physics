@@ -1,4 +1,4 @@
-import { renderMarkdown } from "./markdown.js";
+import { renderMarkdown } from "./markdown.js?v=20261120";
 
 const docs = [
   ["summary", "Summary", "content/method.md"],
