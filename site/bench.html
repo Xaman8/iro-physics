@@ -9,9 +9,12 @@
 <body class="app">
   <header class="top" data-page="bench.html"></header>
   <div class="bench-bar" id="benchBar"></div>
-  <main class="split" id="v1views">
-    <section class="pane" id="physics" aria-label="Classic physics view"></section>
-    <section class="pane" id="envelope" aria-label="Envelope physics view"></section>
+  <main class="bench-column" id="v1views">
+    <section class="pane envelope-stage" id="envelope" aria-label="Envelope physics view"></section>
+    <details class="francis-fold" id="francis">
+      <summary>Francis system physics</summary>
+      <section class="francis-body" id="physics" aria-label="Classic physics view"></section>
+    </details>
   </main>
   <main class="v2-layout" id="v2views" hidden>
     <section class="pane v2-graph" id="v2graph" aria-label="v2 envelope graph"></section>
